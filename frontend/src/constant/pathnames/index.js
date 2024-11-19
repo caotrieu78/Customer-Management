@@ -7,7 +7,7 @@ const PAYMENT_PATH = "/payment";
 
 export const PATHS = {
     // Authentication
-    LOGIN: "/",
+    LOGIN: "/login",
     HOME: "/",
 
     // User Management

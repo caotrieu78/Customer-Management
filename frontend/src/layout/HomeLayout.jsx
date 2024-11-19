@@ -24,7 +24,7 @@ const HomeLayout = () => {
 
                 {/* Main content area */}
                 <div
-                    className={`${isSidebarCollapsed ? "col" : "col-md-8 col-lg-9"
+                    className={`${isSidebarCollapsed ? "col" : "col-md-9 col-lg-10"
                         } p-0`}
                 >
                     <Header toggleSidebar={toggleSidebar} />
