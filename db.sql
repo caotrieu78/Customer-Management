@@ -252,7 +252,7 @@ CREATE TABLE `user` (
   `Password` varchar(255) NOT NULL,
   `FullName` varchar(255) DEFAULT NULL,
   `Email` varchar(255) DEFAULT NULL,
-  `Role` enum('Admin','Staff Manager') NOT NULL,
+  `Role` enum('Admin','Staff','Manager') NOT NULL,
   `Avatar` varchar(255) DEFAULT NULL,
   `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -280,4 +280,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-11-17 21:36:04
+-- Dump completed on 2024-11-20 21:41:39
