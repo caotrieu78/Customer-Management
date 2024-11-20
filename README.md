@@ -9,5 +9,3 @@ cd frontend
 npm install
 # Chạy ứng dụng trên trình duyệt
 npm run dev
-
-Triều
