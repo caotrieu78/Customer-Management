@@ -14,10 +14,10 @@ npm: v6 trở lên
 jdk 22 
 
 
-2.2. Cài đặt và chạy dự án
-Cài đặt thư viện
+2.2. Cài đặt và chạy dự án fFontend
 # Cài đặt frontend
 cd frontend
+# Cài đặt thư viện
 npm install
 # Chạy ứng dụng trên trình duyệt
--- npm run dev
+npm run dev
