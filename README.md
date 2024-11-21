@@ -1,14 +1,19 @@
 # Customer-Management
-Thực Tập Project Công Ty Hòa Bình Website Quản Lý Khách Hàng
+1. Giới thiệu
+Customer-Management là một ứng dụng web quản lý khách hàng, bao gồm các chức năng cơ bản như thêm, sửa, xóa, và xem danh sách khách hàng.
 
-1.Frontend
-1.1 Cài đặt các thư viện cần thiết 
-npm install 
-1.2 Chạy ứng dụng trên trình duyệt
+# Tạo Project React JS 
+-- npm create vite@latest 
+
+2.2. Cài đặt và chạy dự án Fontend
+# Cài đặt frontend
+cd frontend
+# Cài đặt thư viện
+npm install
+# Chạy ứng dụng trên trình duyệt
 npm run dev
 
-2.Backend
-2.1 
---------------- 
-2.2 
----------------
+
+
+# Cài đặt và chạy dự án Backend
+import db vào mysql 

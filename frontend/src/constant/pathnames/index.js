@@ -12,6 +12,8 @@ export const PATHS = {
 
     // User Management
     USER: USER_PATH,
+    ADD_USER: `${USER_PATH}/addUser`,
+    EDIT_USER: `${USER_PATH}/editUser`,
 
     // Customer Management
     CUSTOMER: CUSTOMER_PATH,
