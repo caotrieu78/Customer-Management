@@ -45,8 +45,6 @@ function App() {
           <Route path={`${PATHS.EDIT_USER}/:id`} element={<EditUser />} />
 
 
-
-
           <Route path={PATHS.CUSTOMER} element={<Customer />} />
           <Route path={PATHS.PROJECT} element={<Project />} />
           <Route path={PATHS.EVENT} element={<SuKien />} />

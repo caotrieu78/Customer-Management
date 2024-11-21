@@ -44,7 +44,7 @@ function EditUser() {
             setTimeout(() => {
                 setSuccessMessage("");
                 navigate("/user"); // Redirect back to Manager page
-            }, 3000);
+            }, 2000);
         } catch (err) {
             console.error("Error updating user:", err);
             setError("Unable to update user.");
