@@ -1,28 +1,52 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../../services/authService";
-import { PATHS } from "../../constant/pathnames";
+import { login } from "../../services/authService"; // Gọi API từ authService
+import { PATHS } from "../../constant/pathnames"; // Đường dẫn
 
 function Login({ onLogin }) {
     const navigate = useNavigate();
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const [username, setUsername] = useState(""); // Lưu username trong state
+    const [password, setPassword] = useState(""); // Lưu password trong state
+    const [error, setError] = useState(""); // Lưu lỗi nếu có
+    const [isLoading, setIsLoading] = useState(false); // Trạng thái loading khi chờ API
 
+    // Xử lý khi submit form
     const handleLogin = async (e) => {
         e.preventDefault();
         setError("");
         setIsLoading(true);
+
         try {
-            const response = await login(username, password); // Call login API
-            console.log("Login Response:", response); // Debug
-            onLogin(response); // Pass user data to App
+            // Gửi thông tin đăng nhập tới API
+            const response = await login(username, password);
+
+            // Debug: Hiển thị phản hồi từ API
+            console.log("Login Response:", response);
+
+            // Kiểm tra role từ API
+            if (!response.role) {
+                throw new Error("Role not provided by the server.");
+            }
+
+            // Lưu thông tin người dùng vào localStorage
+            const userData = {
+                username: response.username,
+                userId: response.userId,
+                role: response.role,
+            };
+            localStorage.setItem("user", JSON.stringify(userData));
+
+            // Cập nhật trạng thái người dùng ở App.js (qua prop onLogin)
+            onLogin(userData);
+
+            // Điều hướng về trang HOME
             navigate(PATHS.HOME);
         } catch (err) {
+            // Nếu lỗi, hiển thị thông báo
             console.error("Login error:", err);
-            setError("Invalid username or password.");
+            setError(err.response?.data?.message || "Invalid username or password.");
         } finally {
+            // Tắt trạng thái loading
             setIsLoading(false);
         }
     };
@@ -31,6 +55,7 @@ function Login({ onLogin }) {
         <div className="d-flex align-items-center justify-content-center vh-100 bg-light">
             <div className="card shadow-sm p-4" style={{ width: "400px" }}>
                 <h2 className="text-center mb-4">Login</h2>
+                {/* Hiển thị lỗi nếu có */}
                 {error && <div className="alert alert-danger text-center">{error}</div>}
                 <form onSubmit={handleLogin}>
                     <div className="mb-3">

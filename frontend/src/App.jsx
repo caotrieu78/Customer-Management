@@ -15,9 +15,22 @@ import SuKien from "./Pages/SuKien/SuKien";
 import Login from "./Pages/Login/Login";
 import AddUser from "./Pages/User/AddUser";
 import EditUser from "./Pages/User/EditUser";
+import Home from "./Pages/Home";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // Track login state
+  const [isLoggedIn, setIsLoggedIn] = useState(
+    () => localStorage.getItem("isLoggedIn") === "true"
+  );
+
+  const handleLogin = () => {
+    setIsLoggedIn(true);
+    localStorage.setItem("isLoggedIn", "true");
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    localStorage.removeItem("isLoggedIn");
+  };
 
   return (
     <Router>
@@ -25,7 +38,7 @@ function App() {
         {/* Login Route */}
         <Route
           path={PATHS.LOGIN}
-          element={<Login onLogin={() => setIsLoggedIn(true)} />}
+          element={<Login onLogin={handleLogin} />}
         />
 
         {/* Admin Routes (Protected) */}
@@ -33,17 +46,17 @@ function App() {
           path={PATHS.HOME}
           element={
             isLoggedIn ? (
-              <HomeLayout />
+              <HomeLayout onLogout={handleLogout} />
             ) : (
               <Navigate to={PATHS.LOGIN} replace />
             )
           }
         >
-          {/* ----------------USER-------------------------*/}
+          <Route index element={<Home />} />
+          {/* ----------------USER------------------------- */}
           <Route path={PATHS.USER} element={<User />} />
           <Route path={PATHS.ADD_USER} element={<AddUser />} />
           <Route path={`${PATHS.EDIT_USER}/:id`} element={<EditUser />} />
-
 
           <Route path={PATHS.CUSTOMER} element={<Customer />} />
           <Route path={PATHS.PROJECT} element={<Project />} />
@@ -57,3 +70,4 @@ function App() {
 }
 
 export default App;
+

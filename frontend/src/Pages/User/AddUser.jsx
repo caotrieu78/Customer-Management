@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 import { createUser } from "../../services/authService";
-
-
+import { PATHS } from "../../constant/pathnames"; // Import đường dẫn PATHS
 
 function AddUser() {
     const [formData, setFormData] = useState({
@@ -14,6 +14,8 @@ function AddUser() {
 
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
+
+    const navigate = useNavigate(); // Sử dụng hook useNavigate để điều hướng
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -33,6 +35,9 @@ function AddUser() {
                 password: "",
             });
             setError("");
+            setTimeout(() => {
+                navigate(PATHS.USER); // Chuyển hướng đến trang User sau 1 giây
+            }, 1000);
         } catch (err) {
             console.error("Error adding user:", err);
             setError("Failed to add user. Please try again.");

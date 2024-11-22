@@ -17,5 +17,3 @@ npm run dev
 
 # Cài đặt và chạy dự án Backend
 import db vào mysql 
-
-kk

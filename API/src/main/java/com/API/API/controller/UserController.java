@@ -23,11 +23,25 @@ public class UserController {
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         Optional<User> user = userService.login(loginRequest.getUsername(), loginRequest.getPassword());
         if (user.isPresent()) {
-            return ResponseEntity.ok(new LoginResponse("Login successful!", true));
+            User loggedInUser = user.get();
+            return ResponseEntity.ok(new LoginResponse(
+                    "Login successful!",
+                    true,
+                    loggedInUser.getUserId(),
+                    loggedInUser.getUsername(),
+                    loggedInUser.getRole().toString() // Trả về vai trò của người dùng
+            ));
         } else {
-            return ResponseEntity.status(401).body(new LoginResponse("Invalid username or password", false));
+            return ResponseEntity.status(401).body(new LoginResponse(
+                    "Invalid username or password",
+                    false,
+                    null,
+                    null,
+                    null
+            ));
         }
     }
+
 
 
     // GET: /api/users

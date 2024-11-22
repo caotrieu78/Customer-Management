@@ -5,6 +5,9 @@ import { PATHS } from "../../constant/pathnames";
 
 function User() {
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]); // Users to display after filtering
+    const [searchTerm, setSearchTerm] = useState(""); // Search term state
+    const [roleFilter, setRoleFilter] = useState(""); // Role filter state
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [userToDelete, setUserToDelete] = useState(null);
@@ -15,6 +18,7 @@ function User() {
             try {
                 const data = await getAllUsers();
                 setUsers(data);
+                setFilteredUsers(data); // Initialize filteredUsers
             } catch (err) {
                 console.error("Error fetching users:", err);
                 setError("Unable to fetch users.");
@@ -23,6 +27,31 @@ function User() {
 
         fetchUsers();
     }, []);
+
+    // Apply search and role filter
+    useEffect(() => {
+        let tempUsers = [...users];
+
+        // Loại bỏ vai trò "Admin"
+        tempUsers = tempUsers.filter((user) => user.role !== "Admin");
+
+        // Lọc theo vai trò nếu roleFilter được chọn
+        if (roleFilter) {
+            tempUsers = tempUsers.filter((user) => user.role === roleFilter);
+        }
+
+        // Lọc theo từ khóa tìm kiếm
+        if (searchTerm) {
+            tempUsers = tempUsers.filter(
+                (user) =>
+                    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    user.email.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        setFilteredUsers(tempUsers);
+    }, [searchTerm, roleFilter, users]);
+
 
     // Handle delete user
     const confirmDelete = (userId) => {
@@ -63,6 +92,28 @@ function User() {
                 </NavLink>
             </div>
 
+            {/* Search and Filter */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
+                {/* Search */}
+                <input
+                    type="text"
+                    className="form-control w-50 me-3"
+                    placeholder="Tìm kiếm theo tên hoặc email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                {/* Filter */}
+                <select
+                    className="form-select w-25"
+                    value={roleFilter}
+                    onChange={(e) => setRoleFilter(e.target.value)}
+                >
+                    <option value="">Tất cả vai trò</option>
+                    <option value="Manager">Manager</option>
+                    <option value="Staff">Staff</option>
+                </select>
+            </div>
+
             {/* User Table */}
             <div className="table-responsive">
                 <table className="table table-striped table-bordered">
@@ -77,7 +128,7 @@ function User() {
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map((user) => (
+                        {filteredUsers.map((user) => (
                             <tr key={user.userId}>
                                 <td>{user.userId}</td>
                                 <td>{user.username}</td>
