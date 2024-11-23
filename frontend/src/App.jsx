@@ -16,6 +16,8 @@ import Login from "./Pages/Login/Login";
 import AddUser from "./Pages/User/AddUser";
 import EditUser from "./Pages/User/EditUser";
 import Home from "./Pages/Home";
+import AddCustomer from "./Pages/Customer/AddCustomer";
+import EditCustomer from "./Pages/Customer/EditCustomer";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -58,7 +60,18 @@ function App() {
           <Route path={PATHS.ADD_USER} element={<AddUser />} />
           <Route path={`${PATHS.EDIT_USER}/:id`} element={<EditUser />} />
 
+          {/* ----------------CUSTOMER------------------------- */}
           <Route path={PATHS.CUSTOMER} element={<Customer />} />
+          <Route path={PATHS.ADD_CUSTOMER} element={<AddCustomer />} />
+          <Route path={`${PATHS.EDIT_CUSTOMER}/:id`} element={<EditCustomer />} />
+
+
+
+
+
+
+
+
           <Route path={PATHS.PROJECT} element={<Project />} />
           <Route path={PATHS.EVENT} element={<SuKien />} />
           <Route path={PATHS.REMAIND} element={<Remaind />} />

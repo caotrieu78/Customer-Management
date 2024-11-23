@@ -17,6 +17,9 @@ export const PATHS = {
 
     // Customer Management
     CUSTOMER: CUSTOMER_PATH,
+    ADD_CUSTOMER: `${USER_PATH}/addCustomer`,
+    EDIT_CUSTOMER: `${USER_PATH}/editCustomer`,
+
 
     // Project Management
     PROJECT: PROJECT_PATH,

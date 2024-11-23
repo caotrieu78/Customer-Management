@@ -5,12 +5,16 @@ import { PATHS } from "../../constant/pathnames";
 
 function User() {
     const [users, setUsers] = useState([]);
-    const [filteredUsers, setFilteredUsers] = useState([]); // Users to display after filtering
-    const [searchTerm, setSearchTerm] = useState(""); // Search term state
-    const [roleFilter, setRoleFilter] = useState(""); // Role filter state
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [roleFilter, setRoleFilter] = useState("");
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [userToDelete, setUserToDelete] = useState(null);
+
+    // Pagination states
+    const [currentPage, setCurrentPage] = useState(1);
+    const usersPerPage = 5; // Number of users per page
 
     // Fetch all users
     useEffect(() => {
@@ -18,7 +22,7 @@ function User() {
             try {
                 const data = await getAllUsers();
                 setUsers(data);
-                setFilteredUsers(data); // Initialize filteredUsers
+                setFilteredUsers(data);
             } catch (err) {
                 console.error("Error fetching users:", err);
                 setError("Unable to fetch users.");
@@ -32,15 +36,15 @@ function User() {
     useEffect(() => {
         let tempUsers = [...users];
 
-        // Loại bỏ vai trò "Admin"
+        // Exclude "Admin" role
         tempUsers = tempUsers.filter((user) => user.role !== "Admin");
 
-        // Lọc theo vai trò nếu roleFilter được chọn
+        // Filter by role
         if (roleFilter) {
             tempUsers = tempUsers.filter((user) => user.role === roleFilter);
         }
 
-        // Lọc theo từ khóa tìm kiếm
+        // Filter by search term
         if (searchTerm) {
             tempUsers = tempUsers.filter(
                 (user) =>
@@ -50,8 +54,8 @@ function User() {
         }
 
         setFilteredUsers(tempUsers);
+        setCurrentPage(1); // Reset to the first page after filtering
     }, [searchTerm, roleFilter, users]);
-
 
     // Handle delete user
     const confirmDelete = (userId) => {
@@ -71,6 +75,21 @@ function User() {
         }
     };
 
+    // Pagination logic
+    const indexOfLastUser = currentPage * usersPerPage;
+    const indexOfFirstUser = indexOfLastUser - usersPerPage;
+    const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser);
+
+    const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+
+    const handleNextPage = () => {
+        if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
+    };
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) setCurrentPage((prev) => prev - 1);
+    };
+
     if (error) {
         return <div className="alert alert-danger">{error}</div>;
     }
@@ -80,7 +99,7 @@ function User() {
     }
 
     return (
-        <div className="container mt-4">
+        <div className="container">
             {/* Success Message */}
             {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
@@ -128,7 +147,7 @@ function User() {
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredUsers.map((user) => (
+                        {currentUsers.map((user) => (
                             <tr key={user.userId}>
                                 <td>{user.userId}</td>
                                 <td>{user.username}</td>
@@ -137,14 +156,14 @@ function User() {
                                 <td>{user.role}</td>
                                 <td>
                                     <NavLink
-                                        to={`${PATHS.EDIT_USER}/${user.userId}`} // Navigate to Edit page
+                                        to={`${PATHS.EDIT_USER}/${user.userId}`}
                                         className="btn btn-warning btn-sm me-2"
                                     >
                                         Sửa
                                     </NavLink>
                                     <button
                                         className="btn btn-danger btn-sm"
-                                        onClick={() => confirmDelete(user.userId)} // Confirm delete
+                                        onClick={() => confirmDelete(user.userId)}
                                     >
                                         Xóa
                                     </button>
@@ -153,6 +172,25 @@ function User() {
                         ))}
                     </tbody>
                 </table>
+            </div>
+
+            {/* Pagination Controls */}
+            <div className="d-flex justify-content-center align-items-center mt-3 gap-3">
+                <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={handlePreviousPage}
+                    disabled={currentPage === 1}
+                >
+                    Previous
+                </button>
+                <span>Page {currentPage} of {totalPages}</span>
+                <button
+                    className="btn btn-secondary btn-sm"
+                    onClick={handleNextPage}
+                    disabled={currentPage === totalPages}
+                >
+                    Next
+                </button>
             </div>
 
             {/* Delete Confirmation Modal */}

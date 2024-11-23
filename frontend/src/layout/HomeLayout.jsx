@@ -12,30 +12,26 @@ const HomeLayout = () => {
     };
 
     return (
-        <div className="container-fluid d-flex flex-column vh-100">
-            <div className="row flex-grow-1">
+        <div className="container-fluid d-flex flex-column vh-100 overflow-hidden">
+            <div className="row flex-grow-1 h-100">
                 {/* Sidebar */}
                 <div
-                    className={`${isSidebarCollapsed ? "col-auto" : "col-md-3 col-lg-2"
-                        } bg-dark text-white p-0 vh-100`}
+                    className={`sidebar-wrapper ${isSidebarCollapsed ? "col-auto" : "col-md-3 col-lg-2"} bg-dark text-white p-0 h-100`}
                 >
                     <Slidebar isCollapsed={isSidebarCollapsed} />
                 </div>
 
                 {/* Main content area */}
                 <div
-                    className={`${isSidebarCollapsed ? "col" : "col-md-9 col-lg-10"
-                        } p-0 d-flex flex-column`}
+                    className={`main-content-wrapper ${isSidebarCollapsed ? "col" : "col-md-9 col-lg-10"} p-0 d-flex flex-column`}
                 >
                     <Header toggleSidebar={toggleSidebar} />
-                    <main className="content flex-grow-1 p-4 bg-light">
+                    <main className="content flex-grow-1 p-4 bg-light overflow-auto">
                         <Outlet />
                     </main>
+                    <Footer />
                 </div>
             </div>
-
-            {/* Footer */}
-            <Footer />
         </div>
     );
 };

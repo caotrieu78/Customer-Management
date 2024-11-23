@@ -78,6 +78,7 @@ public class UserService {
     private boolean isPasswordHashed(String password) {
         return password.matches("^[a-fA-F0-9]{64}$"); // SHA-256 luôn là chuỗi Hex dài 64 ký tự
     }
+
     // Xóa người dùng
     public void deleteUser(Integer id) {
         userRepository.deleteById(id);
