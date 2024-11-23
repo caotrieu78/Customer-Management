@@ -31,10 +31,6 @@ public class Customer {
     @JoinColumn(name = "classificationId", referencedColumnName = "classificationID")
     private CustomerClassification classification;
 
-    @ManyToOne
-    @JoinColumn(name = "userId", referencedColumnName = "userId")
-    private User user;
-
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
@@ -118,14 +114,6 @@ public class Customer {
 
     public void setClassification(CustomerClassification classification) {
         this.classification = classification;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
     }
 
     public LocalDateTime getCreatedAt() {

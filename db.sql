@@ -37,7 +37,6 @@ CREATE TABLE customer (
     DateOfBirth DATE, -- Thêm ngày sinh
     Gender ENUM('Male', 'Female', 'Other'), -- Thêm giới tính
     ClassificationID INT, -- Tham chiếu bảng phân loại khách hàng
-    UserID INT, -- Người phụ trách khách hàng
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (ClassificationID) REFERENCES customer_classification(ClassificationID),

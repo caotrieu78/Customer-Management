@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createCustomer } from "../../services/customerServices";
-import { getAllUsers } from "../../services/authService"; // Import API to get users
 import { PATHS } from "../../constant/pathnames";
 
 function AddCustomer() {
@@ -11,30 +10,12 @@ function AddCustomer() {
         phone: "",
         address: "",
         classificationId: "",
-        userId: "",
         dateOfBirth: "", // Added field for birthdate
     });
-    const [users, setUsers] = useState([]); // List of responsible users (excluding Admin)
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
     const navigate = useNavigate();
-
-    // Fetch the list of users (excluding Admin)
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const data = await getAllUsers();
-                const filteredUsers = data.filter((user) => user.role !== "Admin"); // Exclude Admin role
-                setUsers(filteredUsers);
-            } catch (err) {
-                console.error("Error fetching users:", err);
-                setError("Cannot fetch the list of responsible users.");
-            }
-        };
-
-        fetchUsers();
-    }, []);
 
     const handleChange = (e) => {
         setFormData({
@@ -146,26 +127,6 @@ function AddCustomer() {
                         onChange={handleChange}
                         required
                     />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="userId" className="form-label">
-                        Responsible User
-                    </label>
-                    <select
-                        className="form-select"
-                        id="userId"
-                        name="userId"
-                        value={formData.userId}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Select Responsible User</option>
-                        {users.map((user) => (
-                            <option key={user.userId} value={user.userId}>
-                                {user.fullName} ({user.role})
-                            </option>
-                        ))}
-                    </select>
                 </div>
                 <button type="submit" className="btn btn-primary">
                     Add Customer

@@ -148,7 +148,6 @@ function Customer() {
                             <th>Điện thoại</th>
                             <th>Địa chỉ</th>
                             <th>Phân loại</th>
-                            <th>Người phụ trách</th> {/* Cột mới */}
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -162,7 +161,6 @@ function Customer() {
                                 <td>{customer.phone}</td>
                                 <td>{customer.address}</td>
                                 <td>{customer.classification?.classificationName}</td>
-                                <td>{customer.user?.fullName || "Chưa có người phụ trách"}</td> {/* Cột mới */}
                                 <td>
                                     <NavLink
                                         to={`${PATHS.EDIT_CUSTOMER}/${customer.customerId}`}

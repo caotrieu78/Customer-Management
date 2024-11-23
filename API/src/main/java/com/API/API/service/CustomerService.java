@@ -40,7 +40,6 @@ public class CustomerService {
                     customer.setDateOfBirth(updatedCustomer.getDateOfBirth());
                     customer.setGender(updatedCustomer.getGender());
                     customer.setClassification(updatedCustomer.getClassification());
-                    customer.setUser(updatedCustomer.getUser());
                     return customerRepository.save(customer);
                 })
                 .orElseThrow(() -> new RuntimeException("Customer not found"));

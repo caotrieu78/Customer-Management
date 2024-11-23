@@ -9,21 +9,19 @@ public class CustomerRequest {
     private String address;
     private LocalDate dateOfBirth;
     private Integer classificationId;
-    private Integer userId;
 
     // Default constructor
     public CustomerRequest() {
     }
 
     // Constructor with fields
-    public CustomerRequest(String name, String email, String phone, String address, LocalDate dateOfBirth, Integer classificationId, Integer userId) {
+    public CustomerRequest(String name, String email, String phone, String address, LocalDate dateOfBirth, Integer classificationId) {
         this.name = name;
         this.email = email;
         this.phone = phone;
         this.address = address;
         this.dateOfBirth = dateOfBirth;
         this.classificationId = classificationId;
-        this.userId = userId;
     }
 
     // Getters and Setters
@@ -73,13 +71,5 @@ public class CustomerRequest {
 
     public void setClassificationId(Integer classificationId) {
         this.classificationId = classificationId;
-    }
-
-    public Integer getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Integer userId) {
-        this.userId = userId;
     }
 }

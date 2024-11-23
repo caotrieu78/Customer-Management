@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getCustomerById, updateCustomer } from "../../services/customerServices";
-import { getAllUsers } from "../../services/authService"; // Import API to get users
 import { PATHS } from "../../constant/pathnames";
 
 function EditCustomer() {
@@ -14,19 +13,16 @@ function EditCustomer() {
         phone: "",
         address: "",
         classificationId: "",
-        userId: "",
         dateOfBirth: "", // Added field for birthdate
     });
 
-    const [users, setUsers] = useState([]); // List of responsible users (excluding Admin)
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
 
-    // Fetch customer details and users on component mount
+    // Fetch customer details on component mount
     useEffect(() => {
-        const fetchCustomerAndUsers = async () => {
+        const fetchCustomer = async () => {
             try {
-                // Fetch customer details
                 const customer = await getCustomerById(id);
                 setFormData({
                     name: customer.name,
@@ -34,21 +30,15 @@ function EditCustomer() {
                     phone: customer.phone,
                     address: customer.address,
                     classificationId: customer.classification?.classificationId || "",
-                    userId: customer.user?.userId || "",
                     dateOfBirth: customer.dateOfBirth || "",
                 });
-
-                // Fetch list of users (excluding Admin)
-                const usersData = await getAllUsers();
-                const filteredUsers = usersData.filter((user) => user.role !== "Admin");
-                setUsers(filteredUsers);
             } catch (err) {
                 console.error("Error fetching data:", err);
-                setError("Unable to load customer or user information.");
+                setError("Unable to load customer information.");
             }
         };
 
-        fetchCustomerAndUsers();
+        fetchCustomer();
     }, [id]);
 
     // Handle form input changes
@@ -163,26 +153,6 @@ function EditCustomer() {
                         onChange={handleChange}
                         required
                     />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="userId" className="form-label">
-                        Responsible User
-                    </label>
-                    <select
-                        className="form-select"
-                        id="userId"
-                        name="userId"
-                        value={formData.userId}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Select Responsible User</option>
-                        {users.map((user) => (
-                            <option key={user.userId} value={user.userId}>
-                                {user.fullName} ({user.role})
-                            </option>
-                        ))}
-                    </select>
                 </div>
                 <button type="submit" className="btn btn-primary">
                     Update Customer
