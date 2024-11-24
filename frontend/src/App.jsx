@@ -23,6 +23,8 @@ import EditCustomer from "./Pages/Customer/EditCustomer";
 import ProjectType from "./Pages/Project/ProjectType";
 import EditProject from "./Pages/Project/EditProject";
 import AddProject from "./Pages/Project/AddProject";
+import AddPayment from "./Pages/Payment/AddPayment";
+import PaymentList from "./Pages/Payment/PaymentList";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -80,12 +82,17 @@ function App() {
           <Route path={PATHS.PROJECT_TYPES} element={<ProjectType />} />
 
 
+          {/* ----------------PAYMENT-------------------- */}
+          <Route path={PATHS.PAYMENT} element={<Payment />} />
+          <Route path={PATHS.ADD_PAYMENT} element={<AddPayment />} />
+          <Route path={PATHS.PAYMENT_LIST} element={<PaymentList />} />
+          {/* <Route path={`${PATHS.EDIT_PROJECT}/:id`} element={<EditProject />} /> */}
 
 
 
           <Route path={PATHS.EVENT} element={<SuKien />} />
           <Route path={PATHS.REMAIND} element={<Remaind />} />
-          <Route path={PATHS.PAYMENT} element={<Payment />} />
+
         </Route>
       </Routes>
     </Router>

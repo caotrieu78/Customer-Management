@@ -1,9 +1,9 @@
 -- Tạo cơ sở dữ liệu CustomerManagementDB
-CREATE DATABASE CustomerManagementDB;
+CREATE DATABASE IF NOT EXISTS CustomerManagementDB;
 USE CustomerManagementDB;
 
 -- Bảng người dùng (User) với vai trò Admin, Staff, Manager
-CREATE TABLE user (
+CREATE TABLE IF NOT EXISTS user (
     UserID INT PRIMARY KEY AUTO_INCREMENT,
     Username VARCHAR(255) NOT NULL UNIQUE, -- Ràng buộc UNIQUE cho Username
     Password VARCHAR(255) NOT NULL,
@@ -16,19 +16,19 @@ CREATE TABLE user (
 );
 
 -- Bảng phân loại khách hàng (Customer Classification)
-CREATE TABLE customer_classification (
+CREATE TABLE IF NOT EXISTS customer_classification (
     ClassificationID INT PRIMARY KEY AUTO_INCREMENT,
     ClassificationName VARCHAR(100) NOT NULL
 );
 
 -- Bảng loại dự án (Project Type)
-CREATE TABLE project_type (
+CREATE TABLE IF NOT EXISTS project_type (
     ProjectTypeID INT PRIMARY KEY AUTO_INCREMENT,
     TypeName VARCHAR(100) NOT NULL
 );
 
 -- Bảng khách hàng (Customer)
-CREATE TABLE customer (
+CREATE TABLE IF NOT EXISTS customer (
     CustomerID INT PRIMARY KEY AUTO_INCREMENT,
     Name VARCHAR(255) NOT NULL,
     Email VARCHAR(255),
@@ -39,12 +39,11 @@ CREATE TABLE customer (
     ClassificationID INT, -- Tham chiếu bảng phân loại khách hàng
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (ClassificationID) REFERENCES customer_classification(ClassificationID),
-    FOREIGN KEY (UserID) REFERENCES user(UserID)
+    FOREIGN KEY (ClassificationID) REFERENCES customer_classification(ClassificationID)
 );
 
 -- Bảng dự án (Project)
-CREATE TABLE project (
+CREATE TABLE IF NOT EXISTS project (
     ProjectID INT PRIMARY KEY AUTO_INCREMENT,
     CustomerID INT, -- Khách hàng tham gia dự án
     UserID INT,  -- Người phụ trách dự án
@@ -64,14 +63,13 @@ CREATE TABLE project (
     FOREIGN KEY (ProjectTypeID) REFERENCES project_type(ProjectTypeID)
 );
 
-
 -- Bảng thanh toán (Payment)
-CREATE TABLE payment (
+CREATE TABLE IF NOT EXISTS payment (
     PaymentID INT PRIMARY KEY AUTO_INCREMENT,
     CustomerID INT, -- Khách hàng thực hiện thanh toán
     ProjectID INT, -- Dự án liên quan
     InstallmentNumber INT,  -- Số đợt thanh toán
-    Amount DECIMAL(10, 2), -- Số tiền thanh toán
+    Amount DECIMAL(20, 2), -- Số tiền thanh toán
     PaymentDate DATE, -- Ngày thanh toán
     PaymentStatus ENUM('Pending', 'Paid', 'Failed'),
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -80,16 +78,14 @@ CREATE TABLE payment (
     FOREIGN KEY (ProjectID) REFERENCES project(ProjectID)
 );
 
-
 -- Bảng loại sự kiện (Event Type)
-CREATE TABLE event_type (
+CREATE TABLE IF NOT EXISTS event_type (
     EventTypeID INT PRIMARY KEY AUTO_INCREMENT,
     EventTypeName VARCHAR(100) NOT NULL -- Tên loại sự kiện
 );
 
-
 -- Bảng quản lý sự kiện (Event)
-CREATE TABLE event (
+CREATE TABLE IF NOT EXISTS event (
     EventID INT PRIMARY KEY AUTO_INCREMENT,
     CustomerID INT, -- Khách hàng liên quan
     ProjectID INT, -- Dự án liên quan
@@ -115,13 +111,15 @@ VALUES
     ('jane_smith', 'jane123', 'Jane Smith', 'jane.smith@example.com', 'Manager', 'avatar_jane.png'),
     ('alice_johnson', 'alice123', 'Alice Johnson', 'alice.johnson@example.com', 'Staff', 'avatar_alice.png'),
     ('robert_brown', 'robert123', 'Robert Brown', 'robert.brown@example.com', 'Manager', 'avatar_robert.png');
-/*==================================*/
+
+/* INSERT CUSTOMER CLASSIFICATION */
 INSERT INTO customer_classification (ClassificationName)
 VALUES
     ('VIP'),
     ('Normal'),
     ('Potential');
-/*==================================*/
+
+/* INSERT PROJECT TYPE */
 INSERT INTO project_type (TypeName)
 VALUES
     ('Resort'),
@@ -129,34 +127,13 @@ VALUES
     ('Luxury Housing'),
     ('Residential Area'),
     ('Factory');
-/*==================================*/
-INSERT INTO customer (Name, Email, Phone, Address, DateOfBirth, Gender, ClassificationID, UserID)
+
+/* INSERT CUSTOMER */
+INSERT INTO customer (Name, Email, Phone, Address, DateOfBirth, Gender, ClassificationID)
 VALUES
-    ('John Doe', 'john.doe@example.com', '123456789', '123 Elm Street, Springfield', '1985-07-20', 'Male', 1, 2), -- VIP, Staff
-    ('Jane Smith', 'jane.smith@example.com', '987654321', '456 Maple Avenue, Springfield', '1990-05-15', 'Female', 2, 3), -- Normal, Manager
-    ('Alice Johnson', 'alice.johnson@example.com', '555678123', '789 Pine Road, Springfield', '1992-09-10', 'Female', 3, 4), -- Potential, Staff
-    ('Robert Brown', 'robert.brown@example.com', '321654987', '101 Oak Lane, Springfield', '1980-01-25', 'Male', 1, 3), -- VIP, Manager
-    ('Emma Wilson', 'emma.wilson@example.com', '444555666', '202 Birch Way, Springfield', '1995-03-30', 'Female', 2, 2); -- Normal, Staff
-/*==================================*/
-INSERT INTO project (CustomerID, UserID, ProjectName, Description, StartDate, EndDate, Status, ProjectTypeID, TotalAmount, PaidAmount)
-VALUES
-    (1, 3, 'Luxury Resort Project', 'Development of a luxury resort.', '2023-01-01', '2024-01-01', 'Ongoing', 1, 500000.00, 200000.00),
-    (2, 2, 'High-Rise Apartment', 'Construction of high-rise apartments.', '2022-06-01', '2023-06-01', 'Completed', 2, 1000000.00, 1000000.00),
-    (3, 4, 'Luxury Housing', 'Development of luxury housing.', '2023-03-01', '2024-03-01', 'Ongoing', 3, 800000.00, 300000.00),
-    (4, 5, 'Residential Area Project', 'Expansion of residential areas.', '2023-05-01', '2024-05-01', 'Accepted_NotPaid', 4, 600000.00, 0.00),
-    (5, 2, 'Factory Development', 'Factory construction and setup.', '2023-08-01', '2024-08-01', 'Canceled', 5, 700000.00, 350000.00);
-/*==================================*/
-INSERT INTO event_type (EventTypeName)
-VALUES
-    ('Meeting'),
-    ('Contract Signing'),
-    ('Payment Due'),
-    ('Project Review');
-/*==================================*/
-INSERT INTO event (CustomerID, ProjectID, UserID, EventTypeID, EventDate, Description, ReminderDate, ReminderSent)
-VALUES
-    (1, 1, 3, 1, '2023-12-01', 'Meeting with John Doe to discuss project status.', '2023-11-25', FALSE),
-    (2, 2, 2, 2, '2023-01-15', 'Contract signing for High-Rise Apartment.', '2023-01-10', TRUE),
-    (3, 3, 4, 3, '2023-04-01', 'Payment due for Luxury Housing.', '2023-03-28', FALSE),
-    (4, 4, 5, 4, '2023-05-10', 'Project review for Residential Area.', '2023-05-05', TRUE),
-    (5, 5, 2, 1, '2023-08-15', 'Meeting with Emma Wilson to discuss Factory project.', '2023-08-10', FALSE);
+    ('John Doe', 'john.doe@example.com', '123456789', '123 Elm Street, Springfield', '1985-07-20', 'Male', 1),
+    ('Jane Smith', 'jane.smith@example.com', '987654321', '456 Maple Avenue, Springfield', '1990-05-15', 'Female', 2),
+    ('Alice Johnson', 'alice.johnson@example.com', '555678123', '789 Pine Road, Springfield', '1992-09-10', 'Female', 3),
+    ('Robert Brown', 'robert.brown@example.com', '321654987', '101 Oak Lane, Springfield', '1980-01-25', 'Male', 1),
+    ('Emma Wilson', 'emma.wilson@example.com', '444555666', '202 Birch Way, Springfield', '1995-03-30', 'Female', 2);
+

@@ -204,7 +204,7 @@ const AddProject = () => {
                     </div>
                 )}
 
-                {/* Display selected customer info */}
+                {/* Display selected customer info
                 {selectedCustomer && (
                     <div className="customer-selection-info mt-3">
                         <h5 className="h4">Thông Tin Khách Hàng</h5>
@@ -219,7 +219,7 @@ const AddProject = () => {
                             Chọn Lại Khách Hàng
                         </button>
                     </div>
-                )}
+                )} */}
 
                 {/* User Button */}
                 <div className="form-group mb-4 mt-4">
@@ -279,7 +279,7 @@ const AddProject = () => {
                     </div>
                 )}
 
-                {/* Display selected user info */}
+                {/* Display selected user info
                 {selectedUser && (
                     <div className="user-selection-info mt-3">
                         <h5 className="h4">Thông Tin Người Phụ Trách</h5>
@@ -293,7 +293,7 @@ const AddProject = () => {
                             Chọn Lại Người Phụ Trách
                         </button>
                     </div>
-                )}
+                )} */}
 
                 <div className="form-group mb-4">
                     <label className="h4">Loại Dự Án</label>

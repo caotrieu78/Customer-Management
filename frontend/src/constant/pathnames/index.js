@@ -43,4 +43,7 @@ export const PATHS = {
 
     // Payment Management
     PAYMENT: PAYMENT_PATH,
+    ADD_PAYMENT: `${PAYMENT_PATH}/addPayment`,
+    EDIT_PAYMENT: `${PAYMENT_PATH}/editPayment`,
+    PAYMENT_LIST: `${PAYMENT_PATH}/paymentList`,
 };
