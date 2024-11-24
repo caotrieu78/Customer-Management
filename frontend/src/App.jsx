@@ -19,6 +19,11 @@ import Home from "./Pages/Home";
 import AddCustomer from "./Pages/Customer/AddCustomer";
 import EditCustomer from "./Pages/Customer/EditCustomer";
 
+
+import ProjectType from "./Pages/Project/ProjectType";
+import EditProject from "./Pages/Project/EditProject";
+import AddProject from "./Pages/Project/AddProject";
+
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => localStorage.getItem("isLoggedIn") === "true"
@@ -65,14 +70,19 @@ function App() {
           <Route path={PATHS.ADD_CUSTOMER} element={<AddCustomer />} />
           <Route path={`${PATHS.EDIT_CUSTOMER}/:id`} element={<EditCustomer />} />
 
-
-
-
-
-
-
-
+          {/* ----------------PROJECT------------------------- */}
           <Route path={PATHS.PROJECT} element={<Project />} />
+          <Route path={PATHS.ADD_PROJECT} element={<AddProject />} />
+          <Route path={`${PATHS.EDIT_PROJECT}/:id`} element={<EditProject />} />
+
+
+          {/* ----------------PROJECT-TYPES--------------------- */}
+          <Route path={PATHS.PROJECT_TYPES} element={<ProjectType />} />
+
+
+
+
+
           <Route path={PATHS.EVENT} element={<SuKien />} />
           <Route path={PATHS.REMAIND} element={<Remaind />} />
           <Route path={PATHS.PAYMENT} element={<Payment />} />

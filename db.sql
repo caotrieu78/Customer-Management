@@ -54,9 +54,9 @@ CREATE TABLE project (
     EndDate DATE,
     Status ENUM('Ongoing', 'Completed', 'Accepted_NotPaid', 'Canceled') NOT NULL, -- Trạng thái dự án
     ProjectTypeID INT, -- Loại dự án
-    TotalAmount DECIMAL(10, 2),  -- Tổng số tiền của dự án
-    PaidAmount DECIMAL(10, 2) DEFAULT 0, -- Số tiền đã thanh toán
-    RemainingAmount DECIMAL(10, 2) GENERATED ALWAYS AS (TotalAmount - PaidAmount) STORED, -- Số tiền còn lại
+    TotalAmount DECIMAL(20, 2),  -- Tổng số tiền của dự án
+    PaidAmount DECIMAL(20, 2) DEFAULT 0, -- Số tiền đã thanh toán
+    RemainingAmount DECIMAL(20, 2) GENERATED ALWAYS AS (TotalAmount - PaidAmount) STORED, -- Số tiền còn lại
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID) ON DELETE SET NULL,

@@ -27,8 +27,8 @@ public class Customer {
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @ManyToOne
-    @JoinColumn(name = "classificationId", referencedColumnName = "classificationID")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "classificationId", referencedColumnName = "classificationID", foreignKey = @ForeignKey(name = "fk_customer_classification"))
     private CustomerClassification classification;
 
     @Column(updatable = false)
