@@ -24,6 +24,7 @@ import AddPayment from "./Pages/Payment/AddPayment";
 import PaymentList from "./Pages/Payment/PaymentList";
 import SuKien from "./Pages/SuKien/SuKien";
 import EventDetails from "./Pages/SuKien/EventDetails";
+import NotificationDashboard from "./Pages/Remaind/NotificationDashboard";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -94,8 +95,10 @@ function App() {
 
 
 
+          {/* ----------------THÔNG BÁO-------------------- */}
+          {/* <Route path={PATHS.REMAIND} element={<Remaind />} /> */}
+          <Route path={PATHS.REMAIND} element={<NotificationDashboard />} />
 
-          <Route path={PATHS.REMAIND} element={<Remaind />} />
         </Route>
       </Routes>
     </Router>

@@ -119,7 +119,7 @@ CREATE TABLE IF NOT EXISTS event_notifications (
     EventUserID INT NOT NULL, -- ID liên kết sự kiện và người phụ trách (event_users)
     Method ENUM('Email', 'SMS', 'PhoneCall') NOT NULL, -- Phương thức thông báo
     Status ENUM('Success', 'Failed', 'Pending') DEFAULT 'Pending', -- Trạng thái thông báo
-    SentAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Thời gian gửi thông báo
+     sentAt TIMESTAMP NULL DEFAULT NULL, -- Thời gian gửi thông báo (cho phép NULL)
     Message TEXT, -- Nội dung thông báo
     FOREIGN KEY (EventUserID) REFERENCES event_users(EventUserID) ON DELETE CASCADE -- Liên kết đến bảng event_users
 );

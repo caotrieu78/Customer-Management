@@ -48,8 +48,9 @@ export const PATHS = {
     EDIT_EVENT_TYPES: `${EVENT_TYPES_PATH}/editEvent`,
 
 
-    // Reminder Management
+    // Reminder Management (Thông Báo )
     REMAIND: REMAIND_PATH,
+    REMAIND_SEND: "/Remaid_Send",
 
 
     // Payment Management
