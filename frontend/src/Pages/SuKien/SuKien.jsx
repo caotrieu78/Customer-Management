@@ -135,6 +135,11 @@ function Event() {
     };
 
 
+    // Phân Quyền
+    const user = JSON.parse(localStorage.getItem("user"));
+    const isAuthorized = user?.role === "Admin" || user?.role === "Manager"; // Allow Admin and Manager
+
+
 
 
     const indexOfLastEvent = currentPage * eventsPerPage;
@@ -161,17 +166,26 @@ function Event() {
 
             <div className="d-flex justify-content-between align-items-center mb-4">
                 <h1>Danh sách Sự kiện</h1>
-                <button
-                    className="btn btn-primary"
-                    onClick={() => {
-                        setShowAddModal(true);
-                        setEditingEventId(null);
-                        setFormData({ eventTypeId: "", description: "", eventDate: "" });
-                    }}
-                >
-                    Thêm Sự kiện
-                </button>
+                <div className="d-flex">
+                    <NavLink
+                        to={`${PATHS.EVENT_TYPES}`}
+                        className="btn btn-primary btn-sm me-2"
+                    >
+                        Thêm Loại Sự kiện
+                    </NavLink>
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => {
+                            setShowAddModal(true);
+                            setEditingEventId(null);
+                            setFormData({ eventTypeId: "", description: "", eventDate: "" });
+                        }}
+                    >
+                        Thêm Sự kiện
+                    </button>
+                </div>
             </div>
+
 
             <div className="table-responsive">
                 <table className="table table-striped table-bordered">
@@ -200,19 +214,23 @@ function Event() {
                                     >
                                         Sửa
                                     </button>
-                                    <button
-                                        className="btn btn-danger btn-sm me-2"
-                                        onClick={() => confirmDelete(event.eventId)}
-                                    >
-                                        Xóa
-                                    </button>
+                                    {isAuthorized && (
+                                        <>
+                                            <button
+                                                className="btn btn-danger btn-sm me-2"
+                                                onClick={() => confirmDelete(event.eventId)}
+                                            >
+                                                Xóa
+                                            </button>
 
-                                    <NavLink
-                                        to={`${PATHS.EVENT_DETAIL}/${event.eventId}`}
-                                        className="btn btn-primary btn-sm me-2"
-                                    >
-                                        Phân Công Người Phụ Trách
-                                    </NavLink>
+                                            <NavLink
+                                                to={`${PATHS.EVENT_DETAIL}/${event.eventId}`}
+                                                className="btn btn-primary btn-sm me-2"
+                                            >
+                                                Phân Công Người Phụ Trách
+                                            </NavLink>
+                                        </>
+                                    )}
 
                                 </td>
                             </tr>

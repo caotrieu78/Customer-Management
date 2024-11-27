@@ -44,8 +44,6 @@ export const PATHS = {
 
     // Event Types
     EVENT_TYPES: EVENT_TYPES_PATH,
-    ADD_EVENT_TYPES: `${EVENT_TYPES_PATH}/addEvent`,
-    EDIT_EVENT_TYPES: `${EVENT_TYPES_PATH}/editEvent`,
 
 
     // Reminder Management (Thông Báo )

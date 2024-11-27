@@ -1,3 +1,4 @@
+
 package com.API.API.service;
 
 import com.API.API.dto.UpdateNotificationRequest;
@@ -86,26 +87,103 @@ public class EventNotificationService {
         // Tạo nội dung email
         String subject = "Thông báo sự kiện: " + eventTypeName;
         String body = String.format("""
-            Kính gửi Ông/Bà %s,
+            <!DOCTYPE html>
+            <html lang="vi">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Thông Báo Sự Kiện Hòa Bình</title>
+                <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+                <style>
+                    body {
+                        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                        background-color: #f4f4f4;
+                        margin: 0;
+                        padding: 0;
+                        color: #333;
+                    }
 
-            Đây là thông báo về sự kiện sắp diễn ra:
-            - Tên sự kiện: %s
-            - Mô tả: %s
-            - Ngày diễn ra: %s
-            - Ngày nhắc nhở: %s
+                    .email-container {
+                        background-color: #ffffff;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                        margin-top: 20px;
+                    }
 
-            Thông báo từ hệ thống: %s
+                    .header {
+                        background-color: #007BFF;
+                        color: white;
+                        padding: 30px;
+                        text-align: center;
+                        border-top-left-radius: 8px;
+                        border-top-right-radius: 8px;
+                    }
 
-            Trân trọng,
-            Ban tổ chức Công Ty Hòa Bình
+                    .header h1 {
+                        margin: 0;
+                        font-size: 28px;
+                    }
+
+                    .content {
+                        padding: 20px;
+                    }
+
+                    .footer {
+                        background-color: #f1f1f1;
+                        text-align: center;
+                        padding: 15px;
+                        font-size: 14px;
+                        color: #777;
+                        border-bottom-left-radius: 8px;
+                        border-bottom-right-radius: 8px;
+                    }
+
+                    .button {
+                        background-color: #28a745;
+                        color: white;
+                        padding: 10px 20px;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        display: inline-block;
+                        margin-top: 20px;
+                    }
+
+                    .button:hover {
+                        background-color: #218838;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container email-container">
+                    <div class="header">
+                        <h1>Thông Báo Sự Kiện Hòa Bình</h1>
+                    </div>
+                    <div class="content">
+                        <h2>Kính gửi Ông/Bà %s,</h2>
+                        <p>Chúng tôi xin thông báo về sự kiện sắp diễn ra:</p>
+                        <ul class="list-unstyled">
+                            <li><strong>Tên sự kiện:</strong> %s</li>
+                            <li><strong>Mô tả:</strong> %s</li>
+                            <li><strong>Ngày diễn ra:</strong> %s</li>
+                             <li><strong>Địa điểm </strong> PAX SKY, 123 Nguyễn Đình Chiểu, Phường 6, Quận 3, Hồ Chí Minh</li>
+                        </ul>
+                        <p>Thông báo từ hệ thống: <strong>%s</strong></p>
+                    </div>
+                    <div class="footer">
+                     <img src="https://saca.com.vn/vnt_upload/partner/47_ztt.png" alt="Logo Hòa Bình">
+                        <p>Cảm ơn bạn đã quan tâm! <br> Công ty Hòa Bình - Điện thoại: 123-456-7890</p>
+                    </div>
+                </div>
+            </body>
+            </html>
             """,
-                customer.getName(),
-                eventTypeName,
-                eventDescription,
-                eventDate,
-                reminderDate,
-                request.getMessage()
+                customer.getName(),        // Tên khách hàng
+                eventTypeName,             // Tên sự kiện
+                eventDescription,          // Mô tả sự kiện
+                eventDate,                 // Ngày diễn ra sự kiện
+                request.getMessage()       // Thông báo hệ thống
         );
+
 
         // Gửi email
         emailService.sendEmail(toEmail, subject, body);

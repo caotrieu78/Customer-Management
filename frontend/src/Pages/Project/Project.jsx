@@ -13,7 +13,7 @@ function Project() {
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const projectsPerPage = 5; // Number of projects per page
+    const projectsPerPage = 10; // Number of projects per page
 
     // Filters and Search
     const [statusFilter, setStatusFilter] = useState("");
@@ -81,6 +81,14 @@ function Project() {
                 return false;
             return true;
         });
+
+
+    // Phân Quyền
+    const user = JSON.parse(localStorage.getItem("user"));
+    const isAuthorized = user?.role === "Admin" || user?.role === "Manager"; // Allow Admin and Manager
+
+
+
 
     // Pagination logic
     const indexOfLastProject = currentPage * projectsPerPage;
@@ -218,18 +226,23 @@ function Project() {
                                     >
                                         Xem
                                     </button>
-                                    <NavLink
-                                        to={`${PATHS.EDIT_PROJECT}/${project.projectId}`}
-                                        className="btn btn-warning btn-sm me-2"
-                                    >
-                                        Sửa
-                                    </NavLink>
-                                    <button
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => confirmDelete(project.projectId)}
-                                    >
-                                        Xóa
-                                    </button>
+                                    {isAuthorized && (
+                                        <>
+                                            <NavLink
+                                                to={`${PATHS.EDIT_PROJECT}/${project.projectId}`}
+                                                className="btn btn-warning btn-sm me-2"
+                                            >
+                                                Sửa
+                                            </NavLink>
+                                            <button
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() => confirmDelete(project.projectId)}
+                                            >
+                                                Xóa
+                                            </button>
+                                        </>
+                                    )}
+
                                 </td>
                             </tr>
                         ))}

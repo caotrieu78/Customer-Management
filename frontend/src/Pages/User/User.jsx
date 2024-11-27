@@ -14,7 +14,7 @@ function User() {
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const usersPerPage = 5; // Number of users per page
+    const usersPerPage = 10; // Number of users per page
 
     // Fetch all users
     useEffect(() => {

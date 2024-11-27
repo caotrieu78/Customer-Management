@@ -34,7 +34,9 @@ public class EmailService {
             message.setFrom(new InternetAddress(defaultEmail));
             message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(toEmail));
             message.setSubject(subject);
-            message.setText(body);
+
+            // Cấu hình nội dung email dưới dạng HTML
+            message.setContent(body, "text/html; charset=UTF-8");
 
             // Gửi email
             Transport.send(message);

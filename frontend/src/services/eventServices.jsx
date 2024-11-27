@@ -62,6 +62,12 @@ export const getAvailableCustomersForEvent = async (eventId) => {
 export const getEventUsersByEventId = async (eventId) => {
     return handleRequest(() => axios.get(`${API_BASE_URL}/events/${eventId}/users`));
 };
+// Xóa người dùng và khách hàng khỏi sự kiện
+export const deleteUserAndCustomerFromEvent = async (eventId, userId, customerId) => {
+    return handleRequest(() =>
+        axios.delete(`${API_BASE_URL}/events/${eventId}/users/${userId}/customers/${customerId}`)
+    );
+};
 
 // ============================
 // API cho Event Types

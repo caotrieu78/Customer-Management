@@ -25,7 +25,15 @@ import PaymentList from "./Pages/Payment/PaymentList";
 import SuKien from "./Pages/SuKien/SuKien";
 import EventDetails from "./Pages/SuKien/EventDetails";
 import NotificationDashboard from "./Pages/Remaind/NotificationDashboard";
-
+import EventTypes from "./Pages/SuKien/EventTypes";
+// Helper function to check if the user has the required role
+function ProtectedRoute({ children, requiredRoles }) {
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !requiredRoles.includes(user.role)) {
+    return <Navigate to={PATHS.HOME} replace />; // Redirect if no role or insufficient role
+  }
+  return children;  // Render the children if role matches
+}
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => localStorage.getItem("isLoggedIn") === "true"
@@ -63,9 +71,9 @@ function App() {
         >
           <Route index element={<Home />} />
           {/* ----------------USER------------------------- */}
-          <Route path={PATHS.USER} element={<User />} />
-          <Route path={PATHS.ADD_USER} element={<AddUser />} />
-          <Route path={`${PATHS.EDIT_USER}/:id`} element={<EditUser />} />
+          <Route path={PATHS.USER} element={<ProtectedRoute requiredRoles={["Admin"]}> <User /></ProtectedRoute>} />
+          <Route path={PATHS.ADD_USER} element={<ProtectedRoute requiredRoles={["Admin"]}><AddUser /></ProtectedRoute>} />
+          <Route path={`${PATHS.EDIT_USER}/:id`} element={<ProtectedRoute requiredRoles={["Admin"]}><EditUser /> </ProtectedRoute>} />
 
           {/* ----------------CUSTOMER------------------------- */}
           <Route path={PATHS.CUSTOMER} element={<Customer />} />
@@ -92,6 +100,7 @@ function App() {
           {/* ----------------SUKIEN-------------------- */}
           <Route path={PATHS.EVENT} element={<SuKien />} />
           <Route path="/EventDetails/:eventId" element={<EventDetails />} />
+          <Route path={PATHS.EVENT_TYPES} element={<EventTypes />} />
 
 
 

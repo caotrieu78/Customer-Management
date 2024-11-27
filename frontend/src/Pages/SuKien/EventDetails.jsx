@@ -145,7 +145,6 @@ function EventDetails() {
                             <th>Người Phụ Trách</th>
                             <th>Vai Trò</th>
                             <th>Khách Hàng</th>
-                            <th>Trạng Thái Thông Báo</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -155,7 +154,7 @@ function EventDetails() {
                                 <td>{assignedUser.user?.fullName}</td>
                                 <td>{assignedUser.user?.role}</td>
                                 <td>{assignedUser.customer?.name || "Chưa Gán"}</td>
-                                <td>{event.status}</td>
+
                             </tr>
                         ))}
                     </tbody>

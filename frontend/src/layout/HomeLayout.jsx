@@ -12,11 +12,11 @@ const HomeLayout = () => {
     };
 
     return (
-        <div className="container-fluid d-flex flex-column vh-100 overflow-hidden">
-            <div className="row flex-grow-1 h-100">
+        <div className="container-fluid h-100">
+            <div className="row h-100">
                 {/* Sidebar */}
                 <div
-                    className={`sidebar-wrapper ${isSidebarCollapsed ? "col-auto" : "col-md-3 col-lg-2"} bg-dark text-white p-0 h-100`}
+                    className={`sidebar-wrapper ${isSidebarCollapsed ? "col-auto" : "col-md-3 col-lg-2"} bg-dark text-white p-0`}
                 >
                     <Slidebar isCollapsed={isSidebarCollapsed} />
                 </div>
@@ -26,9 +26,12 @@ const HomeLayout = () => {
                     className={`main-content-wrapper ${isSidebarCollapsed ? "col" : "col-md-9 col-lg-10"} p-0 d-flex flex-column`}
                 >
                     <Header toggleSidebar={toggleSidebar} />
+
+                    {/* Scrollable content */}
                     <main className="content flex-grow-1 p-4 bg-light overflow-auto">
                         <Outlet />
                     </main>
+
                     <Footer />
                 </div>
             </div>

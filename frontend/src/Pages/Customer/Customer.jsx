@@ -14,7 +14,7 @@ function Customer() {
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const customersPerPage = 5; // Number of customers per page
+    const customersPerPage = 10; // Number of customers per page
 
     // Fetch all customers
     useEffect(() => {
@@ -93,6 +93,10 @@ function Customer() {
         if (currentPage > 1) setCurrentPage((prev) => prev - 1);
     };
 
+    // Get user role from localStorage (e.g., "Admin", "Staff")
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userRole = user?.role; // Assuming the user object contains the role
+
     if (error) {
         return <div className="alert alert-danger">{error}</div>;
     }
@@ -168,12 +172,15 @@ function Customer() {
                                     >
                                         Sửa
                                     </NavLink>
-                                    <button
-                                        className="btn btn-danger btn-sm"
-                                        onClick={() => confirmDelete(customer.customerId)}
-                                    >
-                                        Xóa
-                                    </button>
+                                    {/* Only render Delete button if user role is "Admin" */}
+                                    {userRole === "Admin" && (
+                                        <button
+                                            className="btn btn-danger btn-sm"
+                                            onClick={() => confirmDelete(customer.customerId)}
+                                        >
+                                            Xóa
+                                        </button>
+                                    )}
                                 </td>
                             </tr>
                         ))}
