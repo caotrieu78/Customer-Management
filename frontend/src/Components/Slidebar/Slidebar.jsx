@@ -16,7 +16,7 @@ function Slidebar({ isCollapsed }) {
         },
         {
             path: PATHS.CUSTOMER,
-            icon: "bi-wallet2",
+            icon: "bi bi-people",
             label: "Quản lý khách hàng",
             roles: ["Admin", "Manager", "Staff"], // Ai cũng có quyền
         },
@@ -35,7 +35,7 @@ function Slidebar({ isCollapsed }) {
         {
             path: PATHS.REMAIND,
             icon: "bi-bell",
-            label: "Quản lý nhắc nhở",
+            label: "Thông Báo nhắc nhở",
             roles: ["Admin", "Manager", "Staff"], // Ai cũng có quyền
         },
         {

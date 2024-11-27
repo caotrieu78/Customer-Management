@@ -78,6 +78,9 @@ CREATE TABLE IF NOT EXISTS payment (
     FOREIGN KEY (ProjectID) REFERENCES project(ProjectID)
 );
 
+
+
+
 -- Bảng loại sự kiện (Event Type)
 CREATE TABLE IF NOT EXISTS event_type (
     EventTypeID INT PRIMARY KEY AUTO_INCREMENT,
@@ -86,22 +89,41 @@ CREATE TABLE IF NOT EXISTS event_type (
 
 -- Bảng quản lý sự kiện (Event)
 CREATE TABLE IF NOT EXISTS event (
-    EventID INT PRIMARY KEY AUTO_INCREMENT,
-    CustomerID INT, -- Khách hàng liên quan
-    ProjectID INT, -- Dự án liên quan
-    UserID INT,  -- Người phụ trách sự kiện
-    EventTypeID INT, -- Loại sự kiện
+    EventID INT PRIMARY KEY AUTO_INCREMENT, -- ID duy nhất của sự kiện
+    EventTypeID INT, -- Loại sự kiện, tham chiếu bảng event_type
     EventDate DATE NOT NULL, -- Ngày diễn ra sự kiện
     Description TEXT, -- Mô tả chi tiết sự kiện
     ReminderDate DATE, -- Ngày nhắc nhở trước khi sự kiện diễn ra
     ReminderSent BOOLEAN DEFAULT FALSE, -- Trạng thái đã gửi nhắc nhở
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID),
-    FOREIGN KEY (ProjectID) REFERENCES project(ProjectID),
-    FOREIGN KEY (UserID) REFERENCES user(UserID),
-    FOREIGN KEY (EventTypeID) REFERENCES event_type(EventTypeID)
+    Status ENUM('PLANNED', 'COMPLETED', 'CANCELED') DEFAULT 'PLANNED', -- Trạng thái sự kiện
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Thời gian tạo sự kiện
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Thời gian cập nhật sự kiện
+    FOREIGN KEY (EventTypeID) REFERENCES event_type(EventTypeID) ON DELETE SET NULL -- Quan hệ với bảng event_type
 );
+
+
+CREATE TABLE event_users (
+    EventUserID INT PRIMARY KEY AUTO_INCREMENT, -- ID duy nhất cho mỗi mối liên kết
+    EventID INT NOT NULL, -- ID của sự kiện
+    UserID INT NOT NULL, -- ID của người phụ trách
+    CustomerID INT NOT NULL, -- ID của khách hàng
+    FOREIGN KEY (EventID) REFERENCES event(EventID) ON DELETE CASCADE, -- Khóa ngoại liên kết tới bảng event
+    FOREIGN KEY (UserID) REFERENCES user(UserID) ON DELETE CASCADE, -- Khóa ngoại liên kết tới bảng user
+    FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID) ON DELETE CASCADE, -- Khóa ngoại liên kết tới bảng customer
+    CONSTRAINT unique_event_customer UNIQUE (EventID, CustomerID) -- Ràng buộc duy nhất: EventID và CustomerID
+);
+
+-- Bảng lưu lịch sử thông báo (Event Notifications)
+CREATE TABLE IF NOT EXISTS event_notifications (
+    NotificationID INT PRIMARY KEY AUTO_INCREMENT, -- ID thông báo
+    EventUserID INT NOT NULL, -- ID liên kết sự kiện và người phụ trách (event_users)
+    Method ENUM('Email', 'SMS', 'PhoneCall') NOT NULL, -- Phương thức thông báo
+    Status ENUM('Success', 'Failed', 'Pending') DEFAULT 'Pending', -- Trạng thái thông báo
+    SentAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Thời gian gửi thông báo
+    Message TEXT, -- Nội dung thông báo
+    FOREIGN KEY (EventUserID) REFERENCES event_users(EventUserID) ON DELETE CASCADE -- Liên kết đến bảng event_users
+);
+
 
 /* INSERT USER */ /*==================================*/
 INSERT INTO user (Username, Password, FullName, Email, Role, Avatar)

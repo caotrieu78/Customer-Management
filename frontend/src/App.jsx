@@ -11,20 +11,19 @@ import Project from "./Pages/Project/Project";
 import Remaind from "./Pages/Remaind/Remaind";
 import Payment from "./Pages/Payment/Payment";
 import HomeLayout from "./layout/HomeLayout";
-import SuKien from "./Pages/SuKien/SuKien";
 import Login from "./Pages/Login/Login";
 import AddUser from "./Pages/User/AddUser";
 import EditUser from "./Pages/User/EditUser";
 import Home from "./Pages/Home";
 import AddCustomer from "./Pages/Customer/AddCustomer";
 import EditCustomer from "./Pages/Customer/EditCustomer";
-
-
 import ProjectType from "./Pages/Project/ProjectType";
 import EditProject from "./Pages/Project/EditProject";
 import AddProject from "./Pages/Project/AddProject";
 import AddPayment from "./Pages/Payment/AddPayment";
 import PaymentList from "./Pages/Payment/PaymentList";
+import SuKien from "./Pages/SuKien/SuKien";
+import EventDetails from "./Pages/SuKien/EventDetails";
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(
@@ -89,10 +88,14 @@ function App() {
           {/* <Route path={`${PATHS.EDIT_PROJECT}/:id`} element={<EditProject />} /> */}
 
 
-
+          {/* ----------------SUKIEN-------------------- */}
           <Route path={PATHS.EVENT} element={<SuKien />} />
-          <Route path={PATHS.REMAIND} element={<Remaind />} />
+          <Route path="/EventDetails/:eventId" element={<EventDetails />} />
 
+
+
+
+          <Route path={PATHS.REMAIND} element={<Remaind />} />
         </Route>
       </Routes>
     </Router>
