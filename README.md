@@ -7,11 +7,15 @@ Customer-Management là một ứng dụng web quản lý khách hàng, bao gồ
 
 2.2. Cài đặt và chạy dự án Fontend
 # Cài đặt frontend
-cd frontend
+
 # Cài đặt thư viện
 npm install
+
+# Mở Ứng Dụng Và Chạy 
+cd frontend
 # Chạy ứng dụng trên trình duyệt
 npm run dev
+
 
 # Cài đặt và chạy dự án Backend
 import db vào mysql 

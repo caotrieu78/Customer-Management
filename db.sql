@@ -112,7 +112,6 @@ CREATE TABLE event_users (
     FOREIGN KEY (CustomerID) REFERENCES customer(CustomerID) ON DELETE CASCADE, -- Khóa ngoại liên kết tới bảng customer
     CONSTRAINT unique_event_customer UNIQUE (EventID, CustomerID) -- Ràng buộc duy nhất: EventID và CustomerID
 );
-
 -- Bảng lưu lịch sử thông báo (Event Notifications)
 CREATE TABLE IF NOT EXISTS event_notifications (
     NotificationID INT PRIMARY KEY AUTO_INCREMENT, -- ID thông báo
@@ -158,4 +157,22 @@ VALUES
     ('Alice Johnson', 'alice.johnson@example.com', '555678123', '789 Pine Road, Springfield', '1992-09-10', 'Female', 3),
     ('Robert Brown', 'robert.brown@example.com', '321654987', '101 Oak Lane, Springfield', '1980-01-25', 'Male', 1),
     ('Emma Wilson', 'emma.wilson@example.com', '444555666', '202 Birch Way, Springfield', '1995-03-30', 'Female', 2);
+
+
+-- Ví dụ chèn dữ liệu vào bảng event_type
+INSERT INTO event_type (EventTypeName) 
+VALUES 
+    ('Đám cưới'), 
+    ('Hội thảo'), 
+    ('Tiệc sinh nhật'), 
+    ('Sự kiện doanh nghiệp');
+
+-- Ví dụ chèn dữ liệu vào bảng event
+INSERT INTO event (EventTypeID, EventDate, Description, ReminderDate, Status) 
+VALUES 
+    (1, '2024-12-15', 'Sự kiện đám cưới tại bãi biển', '2024-12-10', 'PLANNED'),
+    (2, '2024-12-20', 'Hội thảo công nghệ hàng năm tại Hà Nội', '2024-12-18', 'PLANNED'),
+    (3, '2024-12-25', 'Tiệc sinh nhật bất ngờ cho một người bạn', '2024-12-23', 'PLANNED'),
+    (4, '2024-12-30', 'Sự kiện doanh nghiệp cuối năm', '2024-12-28', 'PLANNED');
+
 
