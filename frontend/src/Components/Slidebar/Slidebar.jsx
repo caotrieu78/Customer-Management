@@ -44,10 +44,16 @@ function Slidebar({ isCollapsed }) {
             label: "Quản lý thanh toán",
             roles: ["Admin", "Manager", "Staff"], // Ai cũng có quyền
         },
+        {
+            path: PATHS.THONGKE,  // Đường dẫn mới cho phần thống kê và báo cáo
+            icon: "bi-graph-up-arrow", // Biểu tượng thống kê
+            label: "Thống kê và báo cáo", // Tên menu
+            roles: ["Admin", "Manager", "Staff"], // Ai cũng có quyền
+        }
     ];
 
     return (
-        <nav className={`bg-dark text-white p-3 vh-100 d-flex flex-column ${isCollapsed ? "collapsed-sidebar" : ""}`}>
+        <nav className={`bg-dark text-white p-3  d-flex flex-column ${isCollapsed ? "collapsed-sidebar" : ""}`}>
             <h5 className={`text-white mb-4 ${isCollapsed ? "d-none" : ""}`}>Trang Admin</h5>
             <ul className="nav flex-column">
                 {menuItems

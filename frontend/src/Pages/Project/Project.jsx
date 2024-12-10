@@ -141,10 +141,10 @@ function Project() {
                     onChange={(e) => setStatusFilter(e.target.value)}
                 >
                     <option value="">Tất cả trạng thái</option>
-                    <option value="Ongoing">Ongoing</option>
-                    <option value="Completed">Completed</option>
-                    <option value="Accepted_NotPaid">Accepted - Not Paid</option>
-                    <option value="Canceled">Canceled</option>
+                    <option value="Ongoing">Đang Tiến Hành</option>
+                    <option value="Completed">Đã Hoàn Thành</option>
+                    <option value="Accepted_NotPaid">Đã chấp nhận nhưng chưa thanh toán</option>
+                    <option value="Canceled">Dự Án Hủy Bỏ</option>
                 </select>
 
                 <select

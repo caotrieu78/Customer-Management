@@ -17,6 +17,7 @@ const HomeLayout = () => {
                 {/* Sidebar */}
                 <div
                     className={`sidebar-wrapper ${isSidebarCollapsed ? "col-auto" : "col-md-3 col-lg-2"} bg-dark text-white p-0`}
+                    style={{ transition: "all 0.3s ease" }}
                 >
                     <Slidebar isCollapsed={isSidebarCollapsed} />
                 </div>
@@ -38,5 +39,6 @@ const HomeLayout = () => {
         </div>
     );
 };
+
 
 export default HomeLayout;

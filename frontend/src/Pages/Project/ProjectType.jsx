@@ -18,7 +18,7 @@ function ProjectType() {
 
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
-    const projectTypesPerPage = 5; // Number of project types per page
+    const projectTypesPerPage = 10; // Number of project types per page
 
     // Fetch the list of project types
     useEffect(() => {
@@ -105,16 +105,31 @@ function ProjectType() {
 
     return (
         <div className="container mt-5">
-            <h1 className="mb-4">Danh sách loại dự án</h1>
+
 
             {/* Error Message */}
             {error && <div className="alert alert-danger">{error}</div>}
 
-            <div className="gap-2 mb-3">
-                <NavLink to={`${PATHS.PROJECT}`} className="btn btn-primary flex-grow-1">
-                    Quay Về Trang Quản Lý Dự Án
-                </NavLink>
+            <div className="d-flex justify-content-between">
+                <h1 className="mb-4">Danh sách loại dự án</h1>
+                <div className="d-flex  mb-4">
+                    <div className="gap-2 me-3">
+                        <NavLink to={`${PATHS.PROJECT}`} className="btn btn-primary">
+                            Quay Về Trang Quản Lý Dự Án
+                        </NavLink>
+                    </div>
+                    <div className="gap-2 me-3">
+                        <button
+                            className="btn btn-primary "
+                            onClick={() => handleShowAddEditModal()}
+                        >
+                            Thêm Loại
+                        </button>
+                    </div>
+                </div>
             </div>
+
+
 
             {/* Project Types Table */}
             <div className="table-responsive">
@@ -133,12 +148,7 @@ function ProjectType() {
                                     <td>{type.projectTypeId}</td>
                                     <td>{type.typeName}</td>
                                     <td>
-                                        <button
-                                            className="btn btn-primary btn-sm me-2"
-                                            onClick={() => handleShowAddEditModal()}
-                                        >
-                                            Thêm
-                                        </button>
+
                                         <button
                                             className="btn btn-warning btn-sm me-2"
                                             onClick={() => handleShowAddEditModal(type)}

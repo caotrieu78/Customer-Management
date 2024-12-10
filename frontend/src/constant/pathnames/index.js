@@ -16,6 +16,7 @@ export const PATHS = {
     USER: USER_PATH,
     ADD_USER: `${USER_PATH}/addUser`,
     EDIT_USER: `${USER_PATH}/editUser`,
+    PROFILE: "/Profile",
 
     // Customer Management
     CUSTOMER: CUSTOMER_PATH,
@@ -57,5 +58,7 @@ export const PATHS = {
     ADD_PAYMENT: `${PAYMENT_PATH}/addPayment`,
     EDIT_PAYMENT: `${PAYMENT_PATH}/editPayment`,
 
+    // Thong Ke 
+    THONGKE: "/Thongke"
 
 };

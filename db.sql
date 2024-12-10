@@ -174,5 +174,3 @@ VALUES
     (2, '2024-12-20', 'Hội thảo công nghệ hàng năm tại Hà Nội', '2024-12-18', 'PLANNED'),
     (3, '2024-12-25', 'Tiệc sinh nhật bất ngờ cho một người bạn', '2024-12-23', 'PLANNED'),
     (4, '2024-12-30', 'Sự kiện doanh nghiệp cuối năm', '2024-12-28', 'PLANNED');
-
-

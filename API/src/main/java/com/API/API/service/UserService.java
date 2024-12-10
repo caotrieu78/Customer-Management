@@ -1,10 +1,13 @@
 package com.API.API.service;
 
+import com.API.API.config.FileUtils;
 import com.API.API.model.User;
 import com.API.API.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -53,27 +56,36 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    // Cập nhật người dùng (chỉ mã hóa mật khẩu nếu được thay đổi)
-    // Cập nhật người dùng (chỉ mã hóa mật khẩu nếu được thay đổi và chưa mã hóa)
-    public User updateUser(Integer id, User updatedUser) {
+    public User updateUser(Integer id, User updatedUser, MultipartFile file) throws IOException {
         return userRepository.findById(id)
                 .map(user -> {
+                    // Cập nhật thông tin cơ bản
                     user.setUsername(updatedUser.getUsername());
-                    if (updatedUser.getPassword() != null && !updatedUser.getPassword().isEmpty()) {
-                        // Kiểm tra mật khẩu mới có phải dạng SHA-256 hay không
-                        if (!isPasswordHashed(updatedUser.getPassword())) {
-                            user.setPassword(hashPassword(updatedUser.getPassword())); // Mã hóa nếu chưa mã hóa
-                        } else {
-                            user.setPassword(updatedUser.getPassword()); // Giữ nguyên nếu đã mã hóa
-                        }
-                    }
                     user.setFullName(updatedUser.getFullName());
                     user.setEmail(updatedUser.getEmail());
                     user.setRole(updatedUser.getRole());
-                    return userRepository.save(user);
+
+                    // Kiểm tra nếu có file tải lên
+                    if (file != null && !file.isEmpty()) {
+                        try {
+                            // Lưu avatar mới
+                            String avatarUrl = FileUtils.saveAvatar(file);
+                            user.setAvatar(avatarUrl); // Cập nhật avatar mới
+                        } catch (IOException e) {
+                            throw new RuntimeException("Error saving avatar", e);
+                        }
+                    } else {
+                        // Nếu không có file tải lên, giữ nguyên avatar hiện tại
+                        user.setAvatar(user.getAvatar());
+                    }
+
+                    return userRepository.save(user); // Lưu thông tin người dùng
                 })
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+
+
     // Hàm kiểm tra xem mật khẩu đã được mã hóa SHA-256 hay chưa
     private boolean isPasswordHashed(String password) {
         return password.matches("^[a-fA-F0-9]{64}$"); // SHA-256 luôn là chuỗi Hex dài 64 ký tự

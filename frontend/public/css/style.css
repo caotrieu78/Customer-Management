@@ -6,10 +6,12 @@ body {
     border-radius: 10px;
 }
 
+
 .nav-link {
     transition: background-color 0.4s ease, color 0.4s ease;
     /* Smooth transition for both applying and removing */
 }
+
 
 .nav-link.active {
     background-color: #007bff !important;

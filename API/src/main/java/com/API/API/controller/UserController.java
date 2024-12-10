@@ -5,8 +5,12 @@ import com.API.API.dto.LoginResponse;
 import com.API.API.model.User;
 import com.API.API.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -66,12 +70,23 @@ public class UserController {
 
     // PUT: /api/users/{id}
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Integer id, @RequestBody User user) {
+    public ResponseEntity<User> updateUser(@PathVariable Integer id,
+                                           @RequestParam(value = "file", required = false) MultipartFile file,
+                                           @RequestParam("username") String username,
+                                           @RequestParam("fullName") String fullName,
+                                           @RequestParam("email") String email,
+                                           @RequestParam("role") String role) {
         try {
-            User updatedUser = userService.updateUser(id, user);
-            return ResponseEntity.ok(updatedUser);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            User updatedUser = new User();
+            updatedUser.setUsername(username);
+            updatedUser.setFullName(fullName);
+            updatedUser.setEmail(email);
+            updatedUser.setRole(User.Role.valueOf(role));
+
+            User savedUser = userService.updateUser(id, updatedUser, file);
+            return ResponseEntity.ok(savedUser);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 

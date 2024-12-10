@@ -67,7 +67,6 @@ function PaymentList() {
         }
     };
 
-
     const handlePaymentStatusUpdate = async (paymentId, amount) => {
         if (!selectedProject) return;
 
@@ -152,7 +151,14 @@ function PaymentList() {
                     </thead>
                     <tbody>
                         {projects.map((project) => (
-                            <tr key={project.projectId}>
+                            <tr
+                                key={project.projectId}
+                                className={`${selectedProject?.projectId === project.projectId
+                                    ? "table-active table-info" // Highlight với viền xanh blue
+                                    : ""
+                                    }`}
+                                onClick={() => fetchPaymentsForProject(project.projectId)}
+                            >
                                 <td>{project.projectId}</td>
                                 <td>{project.projectName}</td>
                                 <td>{formatCurrency(project.totalAmount)}</td>
@@ -188,11 +194,10 @@ function PaymentList() {
                                 <td>
                                     <button
                                         className="btn btn-primary btn-sm"
-                                        onClick={() =>
-                                            fetchPaymentsForProject(
-                                                project.projectId
-                                            )
-                                        }
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            fetchPaymentsForProject(project.projectId);
+                                        }}
                                     >
                                         Xem Chi Tiết
                                     </button>

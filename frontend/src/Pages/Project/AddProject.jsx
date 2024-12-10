@@ -21,7 +21,8 @@ const AddProject = () => {
     const [showCustomerModal, setShowCustomerModal] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
-
+    const [searchCustomer, setSearchCustomer] = useState('');
+    const [searchUser, setSearchUser] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -51,7 +52,17 @@ const AddProject = () => {
         // Format số tiền theo dấu chấm ngăn cách hàng nghìn
         return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
+    const filteredCustomers = customers.filter(customer =>
+        customer.name.toLowerCase().includes(searchCustomer.toLowerCase()) ||
+        customer.email.toLowerCase().includes(searchCustomer.toLowerCase()) ||
+        customer.phone.includes(searchCustomer)
+    );
 
+    const filteredUsers = users.filter(user =>
+        user.username.toLowerCase().includes(searchUser.toLowerCase()) ||
+        user.fullName.toLowerCase().includes(searchUser.toLowerCase()) ||
+        user.role.toLowerCase().includes(searchUser.toLowerCase())
+    );
     const handleTotalAmountChange = (e) => {
         const formattedValue = formatCurrency(e.target.value);
         setTotalAmount(formattedValue);  // Cập nhật giá trị vào state
@@ -166,6 +177,13 @@ const AddProject = () => {
                                     </button>
                                 </div>
                                 <div className="modal-body">
+                                    <input
+                                        type="text"
+                                        className="form-control mb-3"
+                                        placeholder="Tìm kiếm khách hàng"
+                                        value={searchCustomer}
+                                        onChange={(e) => setSearchCustomer(e.target.value)}
+                                    />
                                     <table className="table">
                                         <thead>
                                             <tr>
@@ -176,7 +194,7 @@ const AddProject = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {customers.map((customer) => (
+                                            {filteredCustomers.map((customer) => (
                                                 <tr key={customer.customerId}>
                                                     <td>{customer.name}</td>
                                                     <td>{customer.email}</td>
@@ -204,23 +222,6 @@ const AddProject = () => {
                     </div>
                 )}
 
-                {/* Display selected customer info
-                {selectedCustomer && (
-                    <div className="customer-selection-info mt-3">
-                        <h5 className="h4">Thông Tin Khách Hàng</h5>
-                        <h5><strong>Tên:</strong> {selectedCustomer.name}</h5>
-                        <h5><strong>Email:</strong> {selectedCustomer.email}</h5>
-                        <h5><strong>Số điện thoại:</strong> {selectedCustomer.phone}</h5>
-                        <button
-                            type="button"
-                            onClick={() => setSelectedCustomer(null)}
-                            className="btn btn-outline-primary btn-lg"
-                        >
-                            Chọn Lại Khách Hàng
-                        </button>
-                    </div>
-                )} */}
-
                 {/* User Button */}
                 <div className="form-group mb-4 mt-4">
                     <label className="h4">Người Phụ Trách</label>
@@ -241,6 +242,13 @@ const AddProject = () => {
                                     </button>
                                 </div>
                                 <div className="modal-body">
+                                    <input
+                                        type="text"
+                                        className="form-control mb-3"
+                                        placeholder="Tìm kiếm người phụ trách"
+                                        value={searchUser}
+                                        onChange={(e) => setSearchUser(e.target.value)}
+                                    />
                                     <table className="table">
                                         <thead>
                                             <tr>
@@ -251,7 +259,7 @@ const AddProject = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {users.filter(user => user.role !== 'Admin').map((user) => (
+                                            {filteredUsers.map((user) => (
                                                 <tr key={user.userId}>
                                                     <td>{user.username}</td>
                                                     <td>{user.fullName}</td>
@@ -278,22 +286,6 @@ const AddProject = () => {
                         </div>
                     </div>
                 )}
-
-                {/* Display selected user info
-                {selectedUser && (
-                    <div className="user-selection-info mt-3">
-                        <h5 className="h4">Thông Tin Người Phụ Trách</h5>
-                        <h5><strong>Tên:</strong> {selectedUser.username}</h5>
-                        <h5><strong>Vai trò:</strong> {selectedUser.role}</h5>
-                        <button
-                            type="button"
-                            onClick={() => setSelectedUser(null)}
-                            className="btn btn-outline-primary btn-lg"
-                        >
-                            Chọn Lại Người Phụ Trách
-                        </button>
-                    </div>
-                )} */}
 
                 <div className="form-group mb-4">
                     <label className="h4">Loại Dự Án</label>

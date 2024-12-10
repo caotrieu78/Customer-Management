@@ -1,29 +1,46 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getUserById } from "../../services/authService";  // Import getUserById function
+import { PATHS } from "../../constant/pathnames";
 
 function Header({ toggleSidebar }) {
     const [username, setUsername] = useState("");
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Quản lý trạng thái dropdown
-    const navigate = useNavigate(); // Điều hướng
+    const [avatar, setAvatar] = useState("");  // State to store avatar URL
+    const [isDropdownOpen, setIsDropdownOpen] = useState(false); // Manage dropdown state
+    const navigate = useNavigate(); // Navigation hook
 
-    // Lấy dữ liệu từ localStorage khi component được render
+    // Get data from localStorage when the component is rendered
     useEffect(() => {
         const user = JSON.parse(localStorage.getItem("user"));
-        if (user && user.username) {
-            setUsername(user.username); // Cập nhật username từ localStorage
+        if (user && user.userId) {
+            setUsername(user.username); // Set username
+            fetchUserData(user.userId);  // Fetch user data from API to get the avatar
         }
     }, []);
 
-    // Hàm đăng xuất
-    const handleLogout = () => {
-        localStorage.removeItem("user"); // Xóa dữ liệu người dùng khỏi localStorage
-        setUsername(""); // Xóa username khỏi state
-        navigate("/login"); // Điều hướng về trang đăng nhập
+    // Fetch user data (including avatar) from the backend
+    const fetchUserData = async (userId) => {
+        try {
+            const userData = await getUserById(userId);  // Get user by ID
+            if (userData) {
+                setAvatar(userData.avatar || "https://via.placeholder.com/40");  // Set avatar URL, fallback to placeholder
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        }
     };
 
-    // Hàm xem thông tin cá nhân
+    // Handle Logout
+    const handleLogout = () => {
+        localStorage.removeItem("user"); // Remove user data from localStorage
+        setUsername(""); // Reset username
+        setAvatar(""); // Reset avatar
+        navigate("/login"); // Navigate to login page
+    };
+
+    // Handle View Profile
     const handleViewProfile = () => {
-        navigate("/profile"); // Điều hướng đến trang thông tin cá nhân
+        navigate(PATHS.PROFILE); // Navigate to profile page
     };
 
     return (
@@ -50,10 +67,12 @@ function Header({ toggleSidebar }) {
                             className="d-flex align-items-center cursor-pointer"
                             onClick={() => setIsDropdownOpen((prev) => !prev)} // Toggle dropdown
                         >
+                            {/* Avatar */}
                             <img
-                                src="https://via.placeholder.com/40"
+                                src={avatar}  // Use the dynamically fetched avatar
                                 alt="Profile"
-                                className="rounded-circle me-2"
+                                className="rounded-circle me-2 border-primary"
+                                height="35" width="35"  // Size of the avatar
                             />
                             <span className="text-dark fw-bold">{username || "Guest"}</span>
                             <i className="bi bi-caret-down-fill ms-2"></i>

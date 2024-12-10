@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { Profiler, useState } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
@@ -26,6 +26,8 @@ import SuKien from "./Pages/SuKien/SuKien";
 import EventDetails from "./Pages/SuKien/EventDetails";
 import NotificationDashboard from "./Pages/Remaind/NotificationDashboard";
 import EventTypes from "./Pages/SuKien/EventTypes";
+import ThonngKe from "./Pages/ThongKe/ThongKe";
+import Profile from "./Pages/User/Profile";
 // Helper function to check if the user has the required role
 function ProtectedRoute({ children, requiredRoles }) {
   const user = JSON.parse(localStorage.getItem("user"));
@@ -74,6 +76,7 @@ function App() {
           <Route path={PATHS.USER} element={<ProtectedRoute requiredRoles={["Admin"]}> <User /></ProtectedRoute>} />
           <Route path={PATHS.ADD_USER} element={<ProtectedRoute requiredRoles={["Admin"]}><AddUser /></ProtectedRoute>} />
           <Route path={`${PATHS.EDIT_USER}/:id`} element={<ProtectedRoute requiredRoles={["Admin"]}><EditUser /> </ProtectedRoute>} />
+          <Route path={PATHS.PROFILE} element={<Profile />} />
 
           {/* ----------------CUSTOMER------------------------- */}
           <Route path={PATHS.CUSTOMER} element={<Customer />} />
@@ -107,6 +110,11 @@ function App() {
           {/* ----------------THÔNG BÁO-------------------- */}
           {/* <Route path={PATHS.REMAIND} element={<Remaind />} /> */}
           <Route path={PATHS.REMAIND} element={<NotificationDashboard />} />
+
+
+          {/* ----------------THÔNG KÊ-------------------- */}
+          {/* <Route path={PATHS.REMAIND} element={<Remaind />} /> */}
+          <Route path={PATHS.THONGKE} element={<ThonngKe />} />
 
         </Route>
       </Routes>
