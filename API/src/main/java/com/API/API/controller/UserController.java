@@ -73,7 +73,7 @@ public class UserController {
     public ResponseEntity<User> updateUser(@PathVariable Integer id,
                                            @RequestParam(value = "file", required = false) MultipartFile file,
                                            @RequestParam("username") String username,
-                                           @RequestParam("fullName") String fullName,
+                                            @RequestParam("fullName") String fullName,
                                            @RequestParam("email") String email,
                                            @RequestParam("role") String role) {
         try {

@@ -14,7 +14,36 @@ CREATE TABLE IF NOT EXISTS user (
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+-- Bảng permissions
+CREATE TABLE IF NOT EXISTS permissions (
+    PermissionID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(255) NOT NULL UNIQUE COMMENT 'Tên chức năng, ví dụ: Quản lý người dùng',
+    Icon VARCHAR(255) COMMENT 'Biểu tượng liên quan',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
+/* Insert dữ liệu mẫu vào bảng permissions */
+INSERT INTO permissions (Name, Icon)
+VALUES
+    ('Quản lý người dùng', 'bi-person'),
+    ('Quản lý khách hàng', 'bi bi-people'),
+    ('Quản lý dự án', 'bi-bar-chart'),
+    ('Quản lý sự kiện', 'bi-calendar-event'),
+    ('Thông Báo nhắc nhở', 'bi-bell'),
+    ('Quản lý thanh toán', 'bi-credit-card'),
+    ('Thống kê và báo cáo', 'bi-graph-up-arrow');
+
+-- Bảng user_permissions
+CREATE TABLE IF NOT EXISTS user_permissions (
+    UserPermissionID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL,
+    PermissionID INT NOT NULL,
+    AssignedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserID) REFERENCES user(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (PermissionID) REFERENCES permissions(PermissionID) ON DELETE CASCADE,
+    UNIQUE (UserID, PermissionID)
+);
 -- Bảng phân loại khách hàng (Customer Classification)
 CREATE TABLE IF NOT EXISTS customer_classification (
     ClassificationID INT PRIMARY KEY AUTO_INCREMENT,
