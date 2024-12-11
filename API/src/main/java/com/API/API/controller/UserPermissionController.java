@@ -31,7 +31,23 @@ public class UserPermissionController {
         }
     }
 
-    // Lớp để nhận payload
+    // Xóa quyền cho người dùng
+    @DeleteMapping("/remove")
+    public ResponseEntity<String> removePermissionFromUser(@RequestBody RemovePermissionsRequest request) {
+        try {
+            if (request.getUserId() == null || request.getPermissionId() == null) {
+                return ResponseEntity.badRequest().body("User ID hoặc Permission ID không được để trống.");
+            }
+
+            userPermissionService.removePermissionFromUser(request.getUserId(), request.getPermissionId());
+            return ResponseEntity.ok("Xóa quyền thành công.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Lỗi khi xóa quyền: " + e.getMessage());
+        }
+    }
+
+    // Lớp để nhận payload gán quyền
     public static class AssignPermissionsRequest {
         private Integer userId;
         private List<Integer> permissionIds;
@@ -51,6 +67,29 @@ public class UserPermissionController {
 
         public void setPermissionIds(List<Integer> permissionIds) {
             this.permissionIds = permissionIds;
+        }
+    }
+
+    // Lớp để nhận payload xóa quyền
+    public static class RemovePermissionsRequest {
+        private Integer userId;
+        private Integer permissionId;
+
+        // Getters và Setters
+        public Integer getUserId() {
+            return userId;
+        }
+
+        public void setUserId(Integer userId) {
+            this.userId = userId;
+        }
+
+        public Integer getPermissionId() {
+            return permissionId;
+        }
+
+        public void setPermissionId(Integer permissionId) {
+            this.permissionId = permissionId;
         }
     }
 }

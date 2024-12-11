@@ -55,3 +55,11 @@ export const assignPermissionToUser = async (userId, permissionIds) => {
     });
     return response.data; // Returning the data after assigning the permission
 };
+
+// 4. Remove Permission from User
+export const removePermissionFromUser = async (userId, permissionId) => {
+    const response = await axios.delete(`${API_BASE_URL}/user-permissions/remove`, {
+        data: { userId, permissionId }
+    });
+    return response.data; // Returning response after removing permission
+};

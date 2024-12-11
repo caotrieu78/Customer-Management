@@ -11,39 +11,29 @@ function Slidebar({ isCollapsed }) {
         const fetchPermissions = async () => {
             try {
                 let permissions = [];
-                if (user && user.role === "Admin") {
-                    if (!localStorage.getItem("allPermissions")) {
-                        permissions = await getAllPermissions();
-                        localStorage.setItem("allPermissions", JSON.stringify(permissions));
-                    } else {
-                        permissions = JSON.parse(localStorage.getItem("allPermissions"));
-                    }
-                } else if (user && user.userId) {
-                    if (!localStorage.getItem(`permissions_${user.userId}`)) {
-                        permissions = await getPermissionsByUserId(user.userId);
-                        localStorage.setItem(`permissions_${user.userId}`, JSON.stringify(permissions));
-                    } else {
-                        permissions = JSON.parse(localStorage.getItem(`permissions_${user.userId}`));
-                    }
-                }
-                const mappedMenuItems = mapPermissionsToMenuItems(permissions);
 
-                // Loại bỏ logic thêm mục Profile vào danh sách menu
-                setDynamicMenuItems(mappedMenuItems);
+                if (user && user.role === "Admin") {
+                    // Admins get all permissions
+                    permissions = await getAllPermissions();
+                } else if (user && user.userId) {
+                    // Other users fetch permissions by userId
+                    permissions = await getPermissionsByUserId(user.userId);
+                }
+
+                const mappedMenuItems = mapPermissionsToMenuItems(permissions);
+                setDynamicMenuItems(mappedMenuItems); // Update menu items dynamically
             } catch (error) {
                 console.error("Failed to fetch permissions:", error);
             }
         };
+
         fetchPermissions();
-    }, [user]);
-
-
-
+    }, [user]); // Rerun when the user changes or updates occur
 
     const mapPermissionsToMenuItems = (permissions) =>
         permissions.map((permission) => ({
             path: getPathFromName(permission.name.trim()), // Ensure names are trimmed
-            icon: permission.icon,
+            icon: permission.icon || "bi-circle", // Default icon if not provided
             label: permission.name,
         }));
 
@@ -59,6 +49,7 @@ function Slidebar({ isCollapsed }) {
         };
         return pathsMap[name] || PATHS.HOME;
     };
+
     return (
         <nav className={`bg-dark text-white p-3 d-flex flex-column ${isCollapsed ? "collapsed-sidebar" : ""}`}>
             <h5 className={`text-white mb-4 ${isCollapsed ? "d-none" : ""}`}>Trang Admin</h5>

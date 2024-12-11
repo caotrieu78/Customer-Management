@@ -42,5 +42,22 @@ public class UserPermissionService {
             userPermissionRepository.save(userPermission);
         }
     }
+    // Xóa quyền cho người dùng
+    public void removePermissionFromUser(Integer userId, Integer permissionId) {
+        if (userId == null || permissionId == null) {
+            throw new IllegalArgumentException("User ID hoặc Permission ID không được để trống.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy người dùng với ID: " + userId));
+
+        Permission permission = permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy quyền với ID: " + permissionId));
+
+        UserPermission userPermission = userPermissionRepository.findByUserAndPermission(user, permission)
+                .orElseThrow(() -> new RuntimeException("Quyền không tồn tại cho người dùng này"));
+
+        userPermissionRepository.delete(userPermission);
+    }
 }
 
