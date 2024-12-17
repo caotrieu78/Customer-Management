@@ -228,20 +228,31 @@ function Project() {
                                     </button>
                                     {isAuthorized && (
                                         <>
-                                            <NavLink
-                                                to={`${PATHS.EDIT_PROJECT}/${project.projectId}`}
-                                                className="btn btn-warning btn-sm me-2"
-                                            >
-                                                Sửa
-                                            </NavLink>
+                                            {/* Render Edit button only if the project is not completed */}
+                                            {project.status !== "Completed" ? (
+                                                <NavLink
+                                                    to={`${PATHS.EDIT_PROJECT}/${project.projectId}`}
+                                                    className="btn btn-warning btn-sm me-2"
+                                                >
+                                                    Sửa
+                                                </NavLink>
+                                            ) : (
+                                                <button className="btn btn-warning btn-sm me-2" disabled>
+                                                    Sửa
+                                                </button>
+                                            )}
+
+                                            {/* Disable Delete button if the project is completed */}
                                             <button
                                                 className="btn btn-danger btn-sm"
                                                 onClick={() => confirmDelete(project.projectId)}
+                                                disabled={project.status === "Completed"} // Disable if the status is 'Completed'
                                             >
                                                 Xóa
                                             </button>
                                         </>
                                     )}
+
 
                                 </td>
                             </tr>

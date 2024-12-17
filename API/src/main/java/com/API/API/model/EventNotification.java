@@ -23,11 +23,14 @@ public class EventNotification {
     @Column(nullable = false)
     private Status status = Status.Pending;
 
-    @Column(nullable = true) // Cho phép null
+    @Column(nullable = true) // Allow null
     private LocalDateTime sentAt = LocalDateTime.now();
 
     @Column(columnDefinition = "TEXT")
     private String message;
+
+    @Column(nullable = true) // Allow null (attachment path is optional)
+    private String attachmentPath;  // Renamed field
 
     public enum Method {
         Email, SMS, PhoneCall
@@ -84,5 +87,13 @@ public class EventNotification {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public String getAttachmentPath() {
+        return attachmentPath;
+    }
+
+    public void setAttachmentPath(String attachmentPath) {
+        this.attachmentPath = attachmentPath;
     }
 }

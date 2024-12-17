@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { PATHS } from "../../constant/pathnames";
-import { getAllCustomers, deleteCustomer } from "../../services/customerServices";
+import {
+    getAllCustomers,
+    deleteCustomer
+} from "../../services/customerServices";
 
 function Customer() {
     const [customers, setCustomers] = useState([]);
@@ -15,6 +18,10 @@ function Customer() {
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
     const customersPerPage = 10; // Number of customers per page
+
+    // Sort states
+    const [sortColumn, setSortColumn] = useState(""); // Currently sorted column
+    const [sortOrder, setSortOrder] = useState("asc"); // Ascending or descending
 
     // Fetch all customers
     useEffect(() => {
@@ -32,11 +39,11 @@ function Customer() {
         fetchCustomers();
     }, []);
 
-    // Apply search and classification filter
+    // Apply search, classification filter, and sorting
     useEffect(() => {
         let tempCustomers = [...customers];
 
-        // Filter by classification if selected
+        // Filter by classification
         if (classificationFilter) {
             tempCustomers = tempCustomers.filter(
                 (customer) =>
@@ -53,9 +60,20 @@ function Customer() {
             );
         }
 
+        // Sort customers
+        if (sortColumn) {
+            tempCustomers.sort((a, b) => {
+                const aValue = a[sortColumn] || "";
+                const bValue = b[sortColumn] || "";
+                if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+                if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+                return 0;
+            });
+        }
+
         setFilteredCustomers(tempCustomers);
-        setCurrentPage(1); // Reset to the first page after filtering
-    }, [searchTerm, classificationFilter, customers]);
+        setCurrentPage(1); // Reset to the first page after filtering/sorting
+    }, [searchTerm, classificationFilter, customers, sortColumn, sortOrder]);
 
     // Handle delete customer
     const confirmDelete = (customerId) => {
@@ -65,13 +83,25 @@ function Customer() {
     const handleDelete = async () => {
         try {
             await deleteCustomer(customerToDelete);
-            setCustomers(customers.filter((customer) => customer.customerId !== customerToDelete));
+            setCustomers(
+                customers.filter((customer) => customer.customerId !== customerToDelete)
+            );
             setSuccessMessage("Customer deleted successfully!");
             setCustomerToDelete(null);
             setTimeout(() => setSuccessMessage(""), 3000);
         } catch (err) {
             console.error("Error deleting customer:", err);
             setError("Unable to delete customer.");
+        }
+    };
+
+    // Handle sort
+    const handleSort = (column) => {
+        if (sortColumn === column) {
+            setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+        } else {
+            setSortColumn(column);
+            setSortOrder("asc");
         }
     };
 
@@ -102,17 +132,33 @@ function Customer() {
     }
 
     if (customers.length === 0) {
-        return <div className="alert alert-warning">Không có khách hàng nào được tìm thấy.</div>;
+        return (
+            <div className="alert alert-warning">
+                Không có khách hàng nào được tìm thấy.
+            </div>
+        );
     }
 
     return (
         <div className="container">
             {/* Success Message */}
-            {successMessage && <div className="alert alert-success">{successMessage}</div>}
+            {successMessage && (
+                <div className="alert alert-success">{successMessage}</div>
+            )}
 
             {/* Add Customer Button */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1>Danh sách khách hàng</h1>
+                <h1
+                    className="text-center"
+                    style={{
+                        color: "#0056b3",
+                        fontWeight: "bold",
+                        textTransform: "uppercase"
+                    }}
+                >
+                    <i className="bi bi-person-lines-fill me-2"></i>Danh sách Khách Hàng
+                </h1>
+
                 <NavLink to={PATHS.ADD_CUSTOMER} className="btn btn-primary">
                     Thêm khách hàng
                 </NavLink>
@@ -146,12 +192,31 @@ function Customer() {
                 <table className="table table-striped table-bordered">
                     <thead className="table-dark">
                         <tr>
-                            <th>ID</th>
-                            <th>Tên</th>
-                            <th>Email</th>
-                            <th>Điện thoại</th>
-                            <th>Địa chỉ</th>
-                            <th>Phân loại</th>
+                            <th onClick={() => handleSort("customerId")}>
+                                ID{" "}
+                                {sortColumn === "customerId" &&
+                                    (sortOrder === "asc" ? "↑" : "↓")}
+                            </th>
+                            <th onClick={() => handleSort("name")}>
+                                Tên {sortColumn === "name" && (sortOrder === "asc" ? "↑" : "↓")}
+                            </th>
+                            <th onClick={() => handleSort("email")}>
+                                Email{" "}
+                                {sortColumn === "email" && (sortOrder === "asc" ? "↑" : "↓")}
+                            </th>
+                            <th onClick={() => handleSort("phone")}>
+                                Điện thoại{" "}
+                                {sortColumn === "phone" && (sortOrder === "asc" ? "↑" : "↓")}
+                            </th>
+                            <th onClick={() => handleSort("address")}>
+                                Địa chỉ{" "}
+                                {sortColumn === "address" && (sortOrder === "asc" ? "↑" : "↓")}
+                            </th>
+                            <th onClick={() => handleSort("classificationName")}>
+                                Phân loại{" "}
+                                {sortColumn === "classificationName" &&
+                                    (sortOrder === "asc" ? "↑" : "↓")}
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -172,7 +237,6 @@ function Customer() {
                                     >
                                         Sửa
                                     </NavLink>
-                                    {/* Only render Delete button if user role is "Admin" */}
                                     {userRole === "Admin" && (
                                         <button
                                             className="btn btn-danger btn-sm"
@@ -197,7 +261,9 @@ function Customer() {
                 >
                     Previous
                 </button>
-                <span>Page {currentPage} of {totalPages}</span>
+                <span>
+                    Page {currentPage} of {totalPages}
+                </span>
                 <button
                     className="btn btn-secondary btn-sm"
                     onClick={handleNextPage}

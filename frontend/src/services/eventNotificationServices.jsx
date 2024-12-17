@@ -53,7 +53,7 @@ export const sendNotification = async (notificationId, data) => {
     return handleRequest(() =>
         axios.put(`${API_BASE_URL}/notifications/${notificationId}/send`, data, {
             headers: {
-                "Content-Type": "application/json",
+                "Content-Type": "multipart/form-data",  // Đảm bảo rằng content-type là multipart/form-data
             },
         })
     );

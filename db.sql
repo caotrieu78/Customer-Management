@@ -9,11 +9,12 @@ CREATE TABLE IF NOT EXISTS user (
     Password VARCHAR(255) NOT NULL,
     FullName VARCHAR(255),
     Email VARCHAR(255) UNIQUE, -- Ràng buộc UNIQUE cho Email
-    Role ENUM('Admin', 'Staff', 'Manager') NOT NULL, 
+    Role ENUM('Admin', 'Staff', 'Manager') NOT NULL,
     Avatar VARCHAR(255) DEFAULT NULL,
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
 -- Bảng permissions
 CREATE TABLE IF NOT EXISTS permissions (
     PermissionID INT AUTO_INCREMENT PRIMARY KEY,
@@ -44,6 +45,7 @@ CREATE TABLE IF NOT EXISTS user_permissions (
     FOREIGN KEY (PermissionID) REFERENCES permissions(PermissionID) ON DELETE CASCADE,
     UNIQUE (UserID, PermissionID)
 );
+
 -- Bảng phân loại khách hàng (Customer Classification)
 CREATE TABLE IF NOT EXISTS customer_classification (
     ClassificationID INT PRIMARY KEY AUTO_INCREMENT,
@@ -149,6 +151,7 @@ CREATE TABLE IF NOT EXISTS event_notifications (
     Status ENUM('Success', 'Failed', 'Pending') DEFAULT 'Pending', -- Trạng thái thông báo
      sentAt TIMESTAMP NULL DEFAULT NULL, -- Thời gian gửi thông báo (cho phép NULL)
     Message TEXT, -- Nội dung thông báo
+    -- AttachmentPath  VARCHAR(255) NULL, -- Thêm cột hình ảnh (Đường dẫn hình ảnh)
     FOREIGN KEY (EventUserID) REFERENCES event_users(EventUserID) ON DELETE CASCADE -- Liên kết đến bảng event_users
 );
 

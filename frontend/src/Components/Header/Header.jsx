@@ -55,12 +55,12 @@ function Header({ toggleSidebar }) {
                 </div>
                 <div className="d-flex align-items-center">
                     {/* Notification Icon */}
-                    <div className="me-3 position-relative">
+                    {/* <div className="me-3 position-relative">
                         <i className="bi bi-bell-fill text-primary fs-4"></i>
                         <span className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
                             3
                         </span>
-                    </div>
+                    </div> */}
                     {/* User Dropdown */}
                     <div className="dropdown">
                         <div

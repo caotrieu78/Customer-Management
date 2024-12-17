@@ -105,7 +105,16 @@ function User() {
 
             {/* Add User Button */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1>Danh sách User</h1>
+                <h1
+                    className="text-center"
+                    style={{
+                        color: "#0056b3",
+                        fontWeight: "bold",
+                        textTransform: "uppercase"
+                    }}
+                >
+                    <i className="bi bi-people-fill me-2"></i>Danh sách User
+                </h1>
                 <NavLink to={PATHS.ADD_USER} className="btn btn-primary">
                     Thêm User
                 </NavLink>

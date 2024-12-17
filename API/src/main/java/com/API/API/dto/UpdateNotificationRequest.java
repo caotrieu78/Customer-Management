@@ -1,12 +1,14 @@
 package com.API.API.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class UpdateNotificationRequest {
     private String message;
     private LocalDateTime sentAt;
+    private List<String> attachmentPaths;  // Renamed field to hold list of attachment paths (can be images or other files)
 
-    // Getters và Setters
+    // Getters and Setters
     public String getMessage() {
         return message;
     }
@@ -21,5 +23,13 @@ public class UpdateNotificationRequest {
 
     public void setSentAt(LocalDateTime sentAt) {
         this.sentAt = sentAt;
+    }
+
+    public List<String> getAttachmentPaths() {
+        return attachmentPaths;
+    }
+
+    public void setAttachmentPaths(List<String> attachmentPaths) {
+        this.attachmentPaths = attachmentPaths;
     }
 }

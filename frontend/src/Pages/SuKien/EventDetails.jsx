@@ -4,7 +4,7 @@ import {
     getEventById,
     assignUserAndCustomerToEvent,
     getEventUsersByEventId,
-    getAvailableCustomersForEvent,
+    getAvailableCustomersForEvent
 } from "../../services/eventServices";
 import { getAllUsers } from "../../services/authService";
 
@@ -14,235 +14,313 @@ function EventDetails() {
     const [users, setUsers] = useState([]);
     const [customers, setCustomers] = useState([]);
     const [selectedCustomers, setSelectedCustomers] = useState([]);
-    const [error, setError] = useState("");
-    const [successMessage, setSuccessMessage] = useState("");
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchText, setSearchText] = useState("");
+    const [selectedUser, setSelectedUser] = useState(null);
     const [showModal, setShowModal] = useState(false);
+    const [showUserPopup, setShowUserPopup] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        const fetchEventDetails = async () => {
+        const fetchData = async () => {
             try {
-                const eventData = await getEventById(eventId);
-                setEvent(eventData);
-            } catch (err) {
-                setError("Unable to fetch event details.");
-            }
-        };
+                const [eventData, allUsers, eventUsers, availableCustomers] =
+                    await Promise.all([
+                        getEventById(eventId),
+                        getAllUsers(),
+                        getEventUsersByEventId(eventId),
+                        getAvailableCustomersForEvent(eventId)
+                    ]);
 
-        const fetchUsers = async () => {
-            try {
-                const allUsers = await getAllUsers();
+                const assignedCustomerIds = eventUsers.map(
+                    (user) => user.customer?.customerId
+                );
+
+                const filteredCustomers = availableCustomers.filter(
+                    (customer) => !assignedCustomerIds.includes(customer.customerId)
+                );
+
+                setEvent({
+                    ...eventData,
+                    assignedUsers: eventUsers
+                });
                 setUsers(allUsers.filter((user) => user.role !== "Admin"));
+                setFilteredUsers(allUsers.filter((user) => user.role !== "Admin"));
+                setCustomers(filteredCustomers);
             } catch (err) {
-                setError("Unable to fetch users.");
+                console.error("Error fetching data:", err);
+            } finally {
+                setIsLoading(false);
             }
         };
 
-        const fetchEventUsers = async () => {
-            try {
-                const eventUsers = await getEventUsersByEventId(eventId);
-                setEvent((prevEvent) => ({
-                    ...prevEvent,
-                    assignedUsers: eventUsers,
-                }));
-            } catch (err) {
-                setError("Unable to fetch assigned users.");
-            }
-        };
-
-        fetchEventDetails();
-        fetchUsers();
-        fetchEventUsers();
-        fetchCustomers(eventId);
+        fetchData();
     }, [eventId]);
-
-    const fetchCustomers = async (eventId) => {
-        try {
-            const availableCustomers = await getAvailableCustomersForEvent(eventId);
-            setCustomers(availableCustomers);
-        } catch (err) {
-            setError("Unable to fetch available customers.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
 
     const toggleCustomerSelection = (customerId) => {
         setSelectedCustomers((prevSelected) =>
             prevSelected.includes(customerId)
-                ? prevSelected.filter((id) => id !== customerId) // Bỏ chọn nếu đã chọn
-                : [...prevSelected, customerId] // Thêm vào nếu chưa chọn
+                ? prevSelected.filter((id) => id !== customerId)
+                : [...prevSelected, customerId]
         );
     };
 
-    const handleAssignUserAndCustomer = async (userId) => {
-        if (selectedCustomers.length === 0) {
-            setError("Please select at least one customer.");
+    const handleAssignUserAndCustomer = async () => {
+        if (!selectedUser || selectedCustomers.length === 0) {
+            alert("Vui lòng chọn một người phụ trách và ít nhất một khách hàng.");
             return;
         }
+
         try {
             const assignments = await Promise.all(
                 selectedCustomers.map((customerId) =>
-                    assignUserAndCustomerToEvent(eventId, userId, customerId)
+                    assignUserAndCustomerToEvent(eventId, selectedUser.userId, customerId)
                 )
             );
 
-            // Cập nhật danh sách `assignedUsers` ngay lập tức
             setEvent((prevEvent) => ({
                 ...prevEvent,
-                assignedUsers: [...(prevEvent?.assignedUsers || []), ...assignments],
+                assignedUsers: [...(prevEvent?.assignedUsers || []), ...assignments]
             }));
 
-            // Hiển thị thông báo thành công
-            setSuccessMessage("Assignment successful!");
-            setError("");
-            fetchCustomers(eventId); // Cập nhật danh sách khách hàng khả dụng
-            setSelectedCustomers([]); // Reset danh sách khách hàng đã chọn
-            setTimeout(() => {
-                setSuccessMessage(""); // Xóa thông báo sau vài giây
-                setShowModal(false);
-            }, 2000);
+            setCustomers((prevCustomers) =>
+                prevCustomers.filter(
+                    (customer) => !selectedCustomers.includes(customer.customerId)
+                )
+            );
+
+            setSelectedCustomers([]);
+            setSelectedUser(null);
+            setShowModal(false);
         } catch (err) {
-            setError("Unable to assign user and customers to event.");
+            console.error("Error assigning users and customers:", err);
         }
+    };
+
+    const handleSearch = (text) => {
+        setSearchText(text);
+        setFilteredUsers(
+            users.filter((user) =>
+                user.fullName.toLowerCase().includes(text.toLowerCase())
+            )
+        );
     };
 
     const handleCloseModal = () => {
         setShowModal(false);
-        setError("");
         setSelectedCustomers([]);
+        setSelectedUser(null);
     };
 
-    if (isLoading) return <div className="text-center my-5">Loading...</div>;
-    if (error) return <div className="alert alert-danger">{error}</div>;
+    if (isLoading) return <div className="text-center my-5">Đang tải...</div>;
 
     return (
         <div className="container mt-5">
-            <div className="text-center">
-                <h1 className="display-4">Thông Tin Về Sự Kiện</h1>
+            {/* Header Section */}
+            <div
+                className="text-center p-4 mb-4 rounded shadow"
+                style={{
+                    background: "linear-gradient(135deg, #3b82f6, #60a5fa)",
+                    color: "#fff",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
+                }}
+            >
+                <h1 style={{ fontWeight: "bold", fontSize: "2.5rem" }}>
+                    Thông Tin Về Sự Kiện
+                </h1>
             </div>
-            <div className="card shadow mt-4">
+
+            {/* Event Info Section */}
+            <div className="card shadow-lg mb-5">
                 <div className="card-body">
-                    <h4 className="card-title">
-                        Thời Gian Diễn Ra Sự Kiện -{" "}
-                        <span className="text-primary">{event.eventType?.eventTypeName}</span>
-                    </h4>
-                    <p className="card-text">
-                        <strong>Vào Ngày:</strong> {new Date(event.eventDate).toLocaleDateString()}
+                    <h5>
+                        <strong>Loại sự kiện:</strong> {event.eventType?.eventTypeName}
+                    </h5>
+                    <p>
+                        <strong>Ngày:</strong>{" "}
+                        {new Date(event.eventDate).toLocaleDateString()}
                     </p>
-                    <p className="card-text">
-                        <strong>Mô Tả Về Sự Kiện:</strong> {event.description}
+                    <p>
+                        <strong>Mô tả:</strong> {event.description}
                     </p>
                 </div>
             </div>
 
-            <div className="mt-4">
-                <h3>Phụ Trách và Khách Hàng</h3>
-                <table className="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Người Phụ Trách</th>
-                            <th>Vai Trò</th>
-                            <th>Khách Hàng</th>
+            {/* User Assignment Section */}
+            <h3
+                className="mb-4"
+                style={{ fontWeight: "bold", color: "#374151", textAlign: "center" }}
+            >
+                Danh Sách Phụ Trách và Khách Hàng
+            </h3>
+            <table className="table table-hover table-striped shadow-sm">
+                <thead className="bg-primary text-white">
+                    <tr>
+                        <th>#</th>
+                        <th>Người Phụ Trách</th>
+                        <th>Vai Trò</th>
+                        <th>Khách Hàng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {event?.assignedUsers?.map((assignedUser, index) => (
+                        <tr key={index}>
+                            <td>{index + 1}</td>
+                            <td>{assignedUser.user?.fullName}</td>
+                            <td>{assignedUser.user?.role}</td>
+                            <td>{assignedUser.customer?.name || "Chưa Gán"}</td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {event?.assignedUsers?.map((assignedUser, index) => (
-                            <tr key={index}>
-                                <td>{index + 1}</td>
-                                <td>{assignedUser.user?.fullName}</td>
-                                <td>{assignedUser.user?.role}</td>
-                                <td>{assignedUser.customer?.name || "Chưa Gán"}</td>
+                    ))}
+                </tbody>
+            </table>
+            <button
+                className="btn btn-primary mt-3"
+                onClick={() => setShowModal(true)}
+            >
+                Gán Người Phụ Trách và Khách Hàng
+            </button>
 
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-
-            <div className="text-center mt-4">
-                <button
-                    className="btn btn-primary btn-lg"
-                    onClick={() => setShowModal(true)}
-                >
-                    Gán Người Phụ Trách và Khách Hàng
-                </button>
-            </div>
-
+            {/* Main Modal */}
             {showModal && (
-                <div className="modal fade show" tabIndex="-1" style={{ display: "block" }}>
+                <div
+                    className="modal"
+                    style={{
+                        display: "block",
+                        backgroundColor: "rgba(0,0,0,0.5)",
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        zIndex: 1050
+                    }}
+                >
                     <div className="modal-dialog modal-lg">
                         <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Gán Người Phụ Trách và Khách Hàng</h5>
+                            <div className="modal-header bg-primary text-white">
+                                <h5 className="modal-title">
+                                    Gán Người Phụ Trách và Khách Hàng
+                                </h5>
                                 <button
-                                    type="button"
                                     className="btn-close"
-                                    onClick={handleCloseModal}
+                                    onClick={() => setShowModal(false)}
                                 ></button>
                             </div>
                             <div className="modal-body">
-                                {successMessage && (
-                                    <div className="alert alert-success">{successMessage}</div>
-                                )}
-                                {error && <div className="alert alert-danger">{error}</div>}
-
-                                <h5>Danh Sách Khách Hàng Chưa Tham Gia</h5>
+                                <h5 className="text-primary">Danh Sách Khách Hàng</h5>
                                 <ul className="list-group mb-3">
-                                    {customers.length > 0 ? (
-                                        customers.map((customer) => (
-                                            <li
-                                                key={customer.customerId}
-                                                className="list-group-item d-flex justify-content-between align-items-center"
-                                            >
-                                                <div>
-                                                    <input
-                                                        type="checkbox"
-                                                        className="form-check-input me-2"
-                                                        checked={selectedCustomers.includes(customer.customerId)}
-                                                        onChange={() => toggleCustomerSelection(customer.customerId)}
-                                                    />
-                                                    <strong>{customer.name}</strong> - {customer.email || "Không có email"}
-                                                </div>
-                                            </li>
-                                        ))
-                                    ) : (
-                                        <li className="list-group-item text-center text-muted">
-                                            Không còn khách hàng nào khả dụng.
-                                        </li>
-                                    )}
-                                </ul>
-
-                                <h5>Danh Sách Người Phụ Trách</h5>
-                                <ul className="list-group">
-                                    {users.map((user) => (
+                                    {customers.map((customer) => (
                                         <li
-                                            key={user.userId}
+                                            key={customer.customerId}
                                             className="list-group-item d-flex justify-content-between align-items-center"
                                         >
-                                            {user.fullName} ({user.role})
-                                            <button
-                                                className="btn btn-success btn-sm"
-                                                onClick={() => handleAssignUserAndCustomer(user.userId)}
-                                                disabled={selectedCustomers.length === 0}
-                                            >
-                                                Gán
-                                            </button>
+                                            <div>
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedCustomers.includes(
+                                                        customer.customerId
+                                                    )}
+                                                    onChange={() =>
+                                                        toggleCustomerSelection(customer.customerId)
+                                                    }
+                                                />
+                                                <span className="ms-2">{customer.name}</span>
+                                            </div>
                                         </li>
                                     ))}
                                 </ul>
+                                <button
+                                    className="btn btn-secondary mb-3"
+                                    onClick={() => setShowUserPopup(true)}
+                                >
+                                    Chọn Người Phụ Trách
+                                </button>
+                                {selectedUser && (
+                                    <div className="alert alert-info">
+                                        <strong>Người Phụ Trách:</strong> {selectedUser.fullName}
+                                    </div>
+                                )}
                             </div>
-
                             <div className="modal-footer">
                                 <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={handleCloseModal}
+                                    className="btn btn-danger"
+                                    onClick={() => setShowModal(false)}
                                 >
                                     Đóng
                                 </button>
+                                <button
+                                    className="btn btn-success"
+                                    onClick={handleAssignUserAndCustomer}
+                                >
+                                    Xác Nhận
+                                </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* User Selection Popup */}
+            {/* User Selection Popup */}
+            {showUserPopup && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(0,0,0,0.5)",
+                        zIndex: 1050,
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center"
+                    }}
+                >
+                    <div
+                        style={{
+                            backgroundColor: "#fff",
+                            padding: "20px",
+                            borderRadius: "10px",
+                            width: "50%",
+                            maxWidth: "500px",
+                            boxShadow: "0 0 10px rgba(0,0,0,0.3)"
+                        }}
+                    >
+                        <h5 className="mb-3 text-center">Tìm kiếm người phụ trách</h5>
+                        <input
+                            type="text"
+                            className="form-control mb-3"
+                            placeholder="Tìm kiếm..."
+                            value={searchText}
+                            onChange={(e) => handleSearch(e.target.value)}
+                        />
+                        <ul className="list-group">
+                            {filteredUsers.map((user) => (
+                                <li
+                                    key={user.userId}
+                                    className="list-group-item d-flex justify-content-between align-items-center"
+                                >
+                                    {user.fullName}
+                                    <button
+                                        className="btn btn-sm btn-primary"
+                                        onClick={() => {
+                                            setSelectedUser(user);
+                                            setShowUserPopup(false);
+                                        }}
+                                    >
+                                        Chọn
+                                    </button>
+                                </li>
+                            ))}
+                        </ul>
+                        <div className="text-end mt-3">
+                            <button
+                                className="btn btn-secondary"
+                                onClick={() => setShowUserPopup(false)} // Thoát popup
+                            >
+                                Quay Lại
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -250,4 +328,5 @@ function EventDetails() {
         </div>
     );
 }
+
 export default EventDetails;

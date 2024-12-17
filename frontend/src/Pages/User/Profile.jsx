@@ -2,31 +2,31 @@ import React, { useState, useEffect } from "react";
 import { updateUser, getUserById } from "../../services/authService";
 
 function Profile() {
-    const [user, setUser] = useState(null); // Store the user data
-    const [loading, setLoading] = useState(true); // Loading state
-    const [error, setError] = useState(null); // Error state
-    const [avatarFile, setAvatarFile] = useState(null); // Store avatar file for upload
-    const [previewAvatar, setPreviewAvatar] = useState(""); // Preview avatar before upload
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [avatarFile, setAvatarFile] = useState(null);
+    const [previewAvatar, setPreviewAvatar] = useState("");
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [showPreviewModal, setShowPreviewModal] = useState(false);
 
     const userId = JSON.parse(localStorage.getItem("user"))?.userId;
 
     useEffect(() => {
-        // If no userId, show an error message
         if (!userId) {
-            setError("User not found. Please log in.");
+            setError("Người dùng không tồn tại. Vui lòng đăng nhập.");
             setLoading(false);
             return;
         }
 
-        // Fetch user data from the backend using getUserById
         const fetchUserData = async () => {
             try {
-                const userData = await getUserById(userId); // Use the imported function
-                setUser(userData); // Set user data
-                setLoading(false); // Stop loading
+                const userData = await getUserById(userId);
+                setUser(userData);
+                setLoading(false);
             } catch (err) {
-                console.error("Error fetching user data:", err);
-                setError("Error fetching user data");
+                console.error("Lỗi khi lấy dữ liệu người dùng:", err);
+                setError("Lỗi khi lấy dữ liệu người dùng");
                 setLoading(false);
             }
         };
@@ -34,12 +34,10 @@ function Profile() {
         fetchUserData();
     }, [userId]);
 
-    // Handle avatar file change and preview
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         setAvatarFile(file);
 
-        // Show preview of the new avatar
         const reader = new FileReader();
         reader.onloadend = () => {
             setPreviewAvatar(reader.result);
@@ -49,12 +47,11 @@ function Profile() {
         }
     };
 
-    // Handle profile update
     const handleUpdateProfile = async () => {
         const formData = new FormData();
 
         if (avatarFile) {
-            formData.append("file", avatarFile); // Chỉ gửi file nếu người dùng chọn ảnh mới
+            formData.append("file", avatarFile);
         }
         formData.append("username", user.username);
         formData.append("fullName", user.fullName);
@@ -62,17 +59,29 @@ function Profile() {
         formData.append("role", user.role);
 
         try {
-            const updatedUser = await updateUser(userId, formData); // Gọi API
-            setUser(updatedUser); // Cập nhật thông tin user
-            alert("Profile updated successfully!");
+            const updatedUser = await updateUser(userId, formData);
+            setUser(updatedUser);
+            alert("Cập nhật hồ sơ thành công!");
         } catch (error) {
-            console.error("Error updating profile:", error.response || error);
-            alert("Error updating profile.");
+            console.error("Lỗi khi cập nhật hồ sơ:", error.response || error);
+            alert("Lỗi khi cập nhật hồ sơ.");
         }
     };
 
+    const toggleDropdown = () => {
+        setShowDropdown((prev) => !prev);
+    };
 
-    if (loading) return <div className="text-center">Loading...</div>;
+    const handlePreviewModal = () => {
+        setShowPreviewModal(true);
+        setShowDropdown(false);
+    };
+
+    const handleModalClose = () => {
+        setShowPreviewModal(false);
+    };
+
+    if (loading) return <div className="text-center">Đang tải...</div>;
     if (error) return <div className="text-center">{error}</div>;
 
     return (
@@ -81,76 +90,193 @@ function Profile() {
                 <div className="row justify-content-center">
                     <div className="col-md-8 text-center">
                         <div className="profile-card shadow-lg p-4 bg-white rounded">
-                            {/* Avatar Section */}
-                            <div className="avatar-section mb-4">
-                                <img
-                                    src={previewAvatar || user.avatar || "/default-avatar.png"} // Show default if no avatar set
-                                    alt="User Avatar"
-                                    className="rounded-circle border border-3 border-primary"
-                                    height="200"
-                                    width="210"
-                                />
-                                <h1 className="display-4 text-primary mt-3">{user.username}</h1>
+                            {/* Phần Avatar */}
+                            <div
+                                className="avatar-section mb-4 position-relative"
+                                style={{ display: "inline-block" }}
+                            >
+                                <div
+                                    className="avatar-border"
+                                    style={{
+                                        background:
+                                            "linear-gradient(135deg, #6a11cb 0%, #2575fc 100%)",
+                                        borderRadius: "50%",
+                                        padding: "5px",
+                                        display: "inline-block"
+                                    }}
+                                >
+                                    <img
+                                        src={previewAvatar || user.avatar || "/default-avatar.png"}
+                                        alt="User Avatar"
+                                        className="rounded-circle shadow"
+                                        height="200"
+                                        width="200"
+                                        style={{
+                                            objectFit: "cover",
+                                            border: "3px solid white",
+                                            cursor: "pointer",
+                                            transition: "transform 0.3s ease-in-out"
+                                        }}
+                                        onClick={toggleDropdown}
+                                        onMouseOver={(e) =>
+                                            (e.target.style.transform = "scale(1.1)")
+                                        }
+                                        onMouseOut={(e) => (e.target.style.transform = "scale(1)")}
+                                    />
+                                </div>
+                                {showDropdown && (
+                                    <div
+                                        className="dropdown-menu show"
+                                        style={{
+                                            position: "absolute",
+                                            top: "220px",
+                                            left: "50%",
+                                            transform: "translateX(-50%)",
+                                            zIndex: "1000",
+                                            boxShadow: "0px 4px 8px rgba(0, 0, 0, 0.1)",
+                                            background: "#fff",
+                                            borderRadius: "10px",
+                                            padding: "10px"
+                                        }}
+                                    >
+                                        <button
+                                            className="dropdown-item"
+                                            onClick={handlePreviewModal}
+                                            style={{
+                                                cursor: "pointer",
+                                                fontWeight: "bold",
+                                                padding: "8px"
+                                            }}
+                                        >
+                                            <i className="bi bi-eye"></i> Xem ảnh đại diện
+                                        </button>
+                                        <label
+                                            className="dropdown-item"
+                                            htmlFor="avatarFile"
+                                            style={{
+                                                cursor: "pointer",
+                                                fontWeight: "bold",
+                                                padding: "8px"
+                                            }}
+                                        >
+                                            <i className="bi bi-upload"></i> Chọn ảnh đại diện
+                                            <input
+                                                type="file"
+                                                id="avatarFile"
+                                                className="d-none"
+                                                onChange={handleAvatarChange}
+                                                accept="image/*"
+                                            />
+                                        </label>
+                                    </div>
+                                )}
+                                <h3 className="text-primary mt-3">{user.username}</h3>
                             </div>
 
-                            {/* User Role */}
-                            <p className="fs-4 text-secondary mb-4">
-                                Chào mừng bạn đến với hệ thống quản lý khách hàng với vai trò là:{" "}
-                                <strong className="text-success">{user.role}</strong>
+                            {/* Phần Vai trò Người dùng */}
+                            <p className="fs-5 text-secondary mb-4">
+                                Chào mừng bạn đến với hệ thống quản lý khách hàng với vai trò{" "}
+                                <strong className="text-success">{user.role}</strong>.
                             </p>
 
-                            {/* Avatar Upload */}
-                            <div className="avatar-upload mb-4">
-                                <label htmlFor="avatarFile" className="form-label">Change Avatar:</label>
-                                <input
-                                    type="file"
-                                    id="avatarFile"
-                                    className="form-control"
-                                    onChange={handleAvatarChange}
-                                    accept="image/*"
-                                />
-                            </div>
-
-                            {/* User Details */}
-                            <div className="user-details mb-4">
+                            {/* Thông tin người dùng */}
+                            <div className="user-details mb-4 text-start ">
                                 <div className="form-group mb-3">
-                                    <label htmlFor="username" className="form-label">Username:</label>
+                                    <label htmlFor="username" className="form-label ms-2">
+                                        <i className="bi bi-person "></i> Tên người dùng:
+                                    </label>
                                     <input
                                         type="text"
                                         className="form-control"
                                         id="username"
                                         value={user.username}
-                                        onChange={(e) => setUser({ ...user, username: e.target.value })}
+                                        onChange={(e) =>
+                                            setUser({ ...user, username: e.target.value })
+                                        }
                                     />
                                 </div>
 
                                 <div className="form-group mb-3">
-                                    <label htmlFor="fullName" className="form-label">Full Name:</label>
+                                    <label htmlFor="fullName" className="form-label ms-2">
+                                        <i className="bi bi-person-circle"></i> Họ và tên:
+                                    </label>
                                     <input
                                         type="text"
                                         className="form-control"
                                         id="fullName"
                                         value={user.fullName}
-                                        onChange={(e) => setUser({ ...user, fullName: e.target.value })}
+                                        onChange={(e) =>
+                                            setUser({ ...user, fullName: e.target.value })
+                                        }
                                     />
                                 </div>
 
                                 <div className="form-group mb-3">
-                                    <label htmlFor="email" className="form-label">Email:</label>
+                                    <label htmlFor="email" className="form-label ms-2">
+                                        <i className="bi bi-envelope"></i> Email:
+                                    </label>
                                     <input
                                         type="email"
                                         className="form-control"
                                         id="email"
                                         value={user.email}
-                                        onChange={(e) => setUser({ ...user, email: e.target.value })}
+                                        onChange={(e) =>
+                                            setUser({ ...user, email: e.target.value })
+                                        }
                                     />
                                 </div>
                             </div>
 
-                            {/* Update Button */}
-                            <button onClick={handleUpdateProfile} className="btn btn-primary">
-                                Update Profile
+                            {/* Nút Cập nhật thông tin */}
+                            <button
+                                className="btn btn-primary w-100"
+                                onClick={handleUpdateProfile}
+                            >
+                                Cập nhật thông tin
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Modal xem ảnh đại diện */}
+            {showPreviewModal && (
+                <div
+                    className="modal show"
+                    style={{ display: "block", position: "fixed", zIndex: "1050" }}
+                    onClick={handleModalClose}
+                >
+                    <div
+                        className="modal-dialog modal-lg"
+                        onClick={(e) => e.stopPropagation()}
+                        style={{
+                            maxWidth: "80%",
+                            margin: "auto"
+                        }}
+                    >
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h5 className="modal-title">Xem ảnh đại diện</h5>
+                                <button
+                                    type="button"
+                                    className="btn-close"
+                                    onClick={handleModalClose}
+                                />
+                            </div>
+                            <div className="modal-body">
+                                <img
+                                    src={previewAvatar || user.avatar || "/default-avatar.png"}
+                                    alt="User Avatar"
+                                    className="w-100"
+                                    style={{
+                                        maxWidth: "100%",
+                                        maxHeight: "calc(100vh - 200px)", // Đảm bảo không vượt chiều cao màn hình
+                                        objectFit: "contain", // Giữ tỷ lệ
+                                        display: "block",
+                                        margin: "0 auto"
+                                    }}
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>
