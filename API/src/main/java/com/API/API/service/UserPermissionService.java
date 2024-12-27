@@ -42,6 +42,10 @@ public class UserPermissionService {
             userPermissionRepository.save(userPermission);
         }
     }
+    // Lấy danh sách quyền của người dùng theo userId
+    public List<Permission> getPermissionsByUserId(Integer userId) {
+        return userPermissionRepository.findPermissionsByUserId(userId);
+    }
     // Xóa quyền cho người dùng
     public void removePermissionFromUser(Integer userId, Integer permissionId) {
         if (userId == null || permissionId == null) {

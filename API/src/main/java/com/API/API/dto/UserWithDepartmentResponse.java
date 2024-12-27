@@ -1,56 +1,40 @@
-package com.API.API.model;
+package com.API.API.dto;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import jakarta.persistence.*;
+import com.API.API.model.Department;
+import com.API.API.model.User.Role;
+
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "user")
-public class User {
+public class UserWithDepartmentResponse {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer userId;
-
-    @Column(nullable = false, unique = true)
     private String username;
-
-    @Column(nullable = false)
-    private String password;
-
+    private String password; // Có thể mã hóa nếu cần
     private String fullName;
-
-    @Column(unique = true)
     private String email;
-
-    @Enumerated(EnumType.STRING)
     private Role role;
-
     private String avatar;
-
-    @Column(updatable = false)
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
+    private Department department;
 
-    @ManyToOne
-    @JoinColumn(name = "departmentId")
-    @JsonBackReference
-    private Department department; // Event type
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    // Constructor
+    public UserWithDepartmentResponse(Integer userId, String username, String password, String fullName, String email,
+                                      Role role, String avatar, LocalDateTime createdAt, LocalDateTime updatedAt,
+                                      Department department) {
+        this.userId = userId;
+        this.username = username;
+        this.password = password;
+        this.fullName = fullName;
+        this.email = email;
+        this.role = role;
+        this.avatar = avatar;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.department = department;
     }
 
     // Getters and Setters
-
     public Integer getUserId() {
         return userId;
     }
@@ -129,9 +113,5 @@ public class User {
 
     public void setDepartment(Department department) {
         this.department = department;
-    }
-
-    public enum Role {
-        Admin, Staff, Manager
     }
 }

@@ -5,16 +5,17 @@ USE CustomerManagementDB;
 -- Bảng người dùng (User) với vai trò Admin, Staff, Manager
 CREATE TABLE IF NOT EXISTS user (
     UserID INT PRIMARY KEY AUTO_INCREMENT,
-    Username VARCHAR(255) NOT NULL UNIQUE, -- Ràng buộc UNIQUE cho Username
+    Username VARCHAR(255) NOT NULL UNIQUE,
     Password VARCHAR(255) NOT NULL,
     FullName VARCHAR(255),
-    Email VARCHAR(255) UNIQUE, -- Ràng buộc UNIQUE cho Email
+    Email VARCHAR(255) UNIQUE,
     Role ENUM('Admin', 'Staff', 'Manager') NOT NULL,
     Avatar VARCHAR(255) DEFAULT NULL,
+    DepartmentID INT, -- Added DepartmentID column
     CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (DepartmentID) REFERENCES department(DepartmentID) ON DELETE SET NULL -- Foreign key constraint
 );
-
 -- Bảng permissions
 CREATE TABLE IF NOT EXISTS permissions (
     PermissionID INT AUTO_INCREMENT PRIMARY KEY,
@@ -35,15 +36,47 @@ VALUES
     ('Quản lý thanh toán', 'bi-credit-card'),
     ('Thống kê và báo cáo', 'bi-graph-up-arrow');
 
--- Bảng user_permissions
-CREATE TABLE IF NOT EXISTS user_permissions (
-    UserPermissionID INT AUTO_INCREMENT PRIMARY KEY,
-    UserID INT NOT NULL,
+CREATE TABLE IF NOT EXISTS department (
+    DepartmentID INT AUTO_INCREMENT PRIMARY KEY,
+    DepartmentName VARCHAR(255) NOT NULL UNIQUE COMMENT 'Tên phòng ban',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+INSERT INTO department (DepartmentName)
+VALUES
+    ('Human Resources'),        -- Phòng Nhân sự
+    ('IT Department'),          -- Phòng Công nghệ thông tin
+    ('Finance Department'),     -- Phòng Tài chính
+    ('Sales Department'),       -- Phòng Kinh doanh
+    ('Marketing Department');   -- Phòng Marketing
+
+CREATE TABLE IF NOT EXISTS user_department (
+    UserDepartmentID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL, -- Người dùng
+    DepartmentID INT NOT NULL, -- Phòng ban
+    AssignedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Thời gian gán
+    FOREIGN KEY (UserID) REFERENCES user(UserID) ON DELETE CASCADE,
+    FOREIGN KEY (DepartmentID) REFERENCES department(DepartmentID) ON DELETE CASCADE,
+    UNIQUE (UserID, DepartmentID) -- Đảm bảo không trùng lặp gán
+);
+
+CREATE TABLE IF NOT EXISTS department_permissions (
+    DepartmentPermissionID INT AUTO_INCREMENT PRIMARY KEY,
+    DepartmentID INT NOT NULL,
     PermissionID INT NOT NULL,
     AssignedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (DepartmentID) REFERENCES department(DepartmentID) ON DELETE CASCADE,
+    FOREIGN KEY (PermissionID) REFERENCES permissions(PermissionID) ON DELETE CASCADE,
+    UNIQUE (DepartmentID, PermissionID)
+);
+CREATE TABLE IF NOT EXISTS user_permissions (
+    UserPermissionID INT AUTO_INCREMENT PRIMARY KEY,
+    UserID INT NOT NULL, -- Người dùng
+    PermissionID INT NOT NULL, -- Quyền
+    AssignedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Thời gian gán
     FOREIGN KEY (UserID) REFERENCES user(UserID) ON DELETE CASCADE,
     FOREIGN KEY (PermissionID) REFERENCES permissions(PermissionID) ON DELETE CASCADE,
-    UNIQUE (UserID, PermissionID)
+    UNIQUE (UserID, PermissionID) -- Đảm bảo mỗi người dùng không bị trùng quyền
 );
 
 -- Bảng phân loại khách hàng (Customer Classification)

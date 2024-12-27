@@ -2,6 +2,7 @@ package com.API.API.controller;
 
 import com.API.API.dto.LoginRequest;
 import com.API.API.dto.LoginResponse;
+import com.API.API.dto.UserWithDepartmentResponse;
 import com.API.API.model.User;
 import com.API.API.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,16 +50,45 @@ public class UserController {
 
 
     // GET: /api/users
+
     @GetMapping
-    public List<User> getAllUsers() {
-        return userService.getAllUsers();
+    public List<UserWithDepartmentResponse> getAllUsers() {
+        // Lấy danh sách tất cả người dùng từ UserService
+        return userService.getAllUsers().stream()
+                .map(user -> new UserWithDepartmentResponse(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getPassword(),
+                        user.getFullName(),
+                        user.getEmail(),
+                        user.getRole(),
+                        user.getAvatar(),
+                        user.getCreatedAt(),
+                        user.getUpdatedAt(),
+                        user.getDepartment() // Thông tin phòng ban
+                ))
+                .toList(); // Chuyển đổi thành danh sách
     }
 
     // GET: /api/users/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+    public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         return userService.getUserById(id)
-                .map(ResponseEntity::ok)
+                .map(user -> {
+                    // Trả về JSON với cả thông tin user và department
+                    return ResponseEntity.ok(new UserWithDepartmentResponse(
+                            user.getUserId(),
+                            user.getUsername(),
+                            user.getPassword(),
+                            user.getFullName(),
+                            user.getEmail(),
+                            user.getRole(),
+                            user.getAvatar(),
+                            user.getCreatedAt(),
+                            user.getUpdatedAt(),
+                            user.getDepartment() // Trả về thông tin phòng ban
+                    ));
+                })
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -89,7 +119,21 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
+    // Gán người dùng vào phòng ban và kế thừa quyền
+    @PutMapping("/{userId}/department/{departmentId}")
+    public ResponseEntity<String> addUserToDepartment(
+            @PathVariable Integer userId,
+            @PathVariable Integer departmentId
+    ) {
+        try {
+            User user = userService.addUserToDepartment(userId, departmentId);
+            return ResponseEntity.ok("User with ID: " + userId +
+                    " has been added to department with ID: " + departmentId +
+                    " and inherited permissions.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        }
+    }
     // DELETE: /api/users/{id}
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {

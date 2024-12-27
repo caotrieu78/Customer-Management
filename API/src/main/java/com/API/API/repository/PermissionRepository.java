@@ -1,6 +1,8 @@
 package com.API.API.repository;
 
 import com.API.API.model.Permission;
+import com.API.API.model.DepartmentPermission;
+import com.API.API.model.Department;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +13,7 @@ import java.util.List;
 @Repository
 public interface PermissionRepository extends JpaRepository<Permission, Integer> {
 
-    @Query("SELECT p FROM Permission p JOIN UserPermission up ON p.permissionID = up.permission.permissionID WHERE up.user.userId = :userId")
-    List<Permission> findPermissionsByUserId(@Param("userId") Integer userId);
+    // Tìm danh sách Permission dựa trên Department ID
+    @Query("SELECT dp.permission FROM DepartmentPermission dp WHERE dp.department.departmentId = :departmentId")
+    List<Permission> findPermissionsByDepartmentId(@Param("departmentId") Integer departmentId);
 }

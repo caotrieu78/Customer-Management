@@ -6,31 +6,39 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user_permissions")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class UserPermission {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer userPermissionID;
+    private Integer userPermissionId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userID", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "userId", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "permissionID", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "permissionId", nullable = false)
     private Permission permission;
 
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime assignedAt = LocalDateTime.now(); // Default to the current timestamp
+    @Column(name = "assignedAt", updatable = false)
+    private java.time.LocalDateTime assignedAt = java.time.LocalDateTime.now();
 
-    // Getters and Setters
-    public Integer getUserPermissionID() {
-        return userPermissionID;
+    // Constructor không tham số (bắt buộc để JPA hoạt động)
+    public UserPermission() {}
+
+    // Constructor đầy đủ tham số
+    public UserPermission(User user, Permission permission) {
+        this.user = user;
+        this.permission = permission;
     }
 
-    public void setUserPermissionID(Integer userPermissionID) {
-        this.userPermissionID = userPermissionID;
+    // Getters and Setters
+    public Integer getUserPermissionId() {
+        return userPermissionId;
+    }
+
+    public void setUserPermissionId(Integer userPermissionId) {
+        this.userPermissionId = userPermissionId;
     }
 
     public User getUser() {
@@ -49,11 +57,12 @@ public class UserPermission {
         this.permission = permission;
     }
 
-    public LocalDateTime getAssignedAt() {
+    public java.time.LocalDateTime getAssignedAt() {
         return assignedAt;
     }
 
-    public void setAssignedAt(LocalDateTime assignedAt) {
+    public void setAssignedAt(java.time.LocalDateTime assignedAt) {
         this.assignedAt = assignedAt;
     }
 }
+

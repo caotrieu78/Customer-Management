@@ -1,7 +1,13 @@
 package com.API.API.service;
 
 import com.API.API.config.FileUtils;
+import com.API.API.model.Department;
+import com.API.API.model.Permission;
 import com.API.API.model.User;
+import com.API.API.model.UserPermission;
+import com.API.API.repository.DepartmentRepository;
+import com.API.API.repository.PermissionRepository;
+import com.API.API.repository.UserPermissionRepository;
 import com.API.API.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +26,15 @@ public class UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private DepartmentRepository departmentRepository;
+
+    @Autowired
+    private PermissionRepository permissionRepository;
+
+    @Autowired
+    private UserPermissionRepository userPermissionRepository;
 
     // Hàm mã hóa mật khẩu bằng SHA-256
     private String hashPassword(String password) {
@@ -48,13 +63,53 @@ public class UserService {
         return userRepository.findByUsernameAndPassword(username, hashedPassword);
     }
 
-
-    // Tạo người dùng mới (chỉ mã hóa khi lưu)
+    // Tạo user mới và gán quyền từ phòng ban
     public User createUser(User user) {
-        // Mã hóa mật khẩu trước khi lưu vào database
+        // Mã hóa mật khẩu trước khi lưu
         user.setPassword(hashPassword(user.getPassword()));
-        return userRepository.save(user);
+
+        // Lưu user mới
+        User savedUser = userRepository.save(user);
+
+        // Nếu user thuộc phòng ban, gán quyền từ phòng ban cho user
+        if (savedUser.getDepartment() != null) {
+            assignPermissionsFromDepartment(savedUser, savedUser.getDepartment().getDepartmentId());
+        }
+
+        return savedUser;
     }
+
+    // Gán user vào phòng ban và kế thừa quyền
+    public User addUserToDepartment(Integer userId, Integer departmentId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Department not found with ID: " + departmentId));
+
+        // Cập nhật phòng ban cho người dùng
+        user.setDepartment(department);
+        userRepository.save(user);
+
+        // Gán quyền từ phòng ban cho người dùng
+        assignPermissionsFromDepartment(user, departmentId);
+
+        return user;
+    }
+
+    // Gán quyền từ phòng ban cho user
+    // Gán tất cả các quyền từ phòng ban cho người dùng
+    private void assignPermissionsFromDepartment(User user, Integer departmentId) {
+        List<Permission> departmentPermissions = permissionRepository.findPermissionsByDepartmentId(departmentId);
+
+        for (Permission permission : departmentPermissions) {
+            if (!userPermissionRepository.existsByUserAndPermission(user, permission)) {
+                userPermissionRepository.save(new UserPermission(user, permission));
+            }
+        }
+    }
+
+    // Cập nhật thông tin user
 
     public User updateUser(Integer id, User updatedUser, MultipartFile file) throws IOException {
         return userRepository.findById(id)
@@ -85,23 +140,17 @@ public class UserService {
     }
 
 
-
-    // Hàm kiểm tra xem mật khẩu đã được mã hóa SHA-256 hay chưa
-    private boolean isPasswordHashed(String password) {
-        return password.matches("^[a-fA-F0-9]{64}$"); // SHA-256 luôn là chuỗi Hex dài 64 ký tự
-    }
-
-    // Xóa người dùng
+    // Xóa user
     public void deleteUser(Integer id) {
         userRepository.deleteById(id);
     }
 
-    // Lấy tất cả người dùng
+    // Lấy danh sách tất cả user
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // Lấy người dùng theo ID
+    // Lấy thông tin user theo ID
     public Optional<User> getUserById(Integer id) {
         return userRepository.findById(id);
     }
