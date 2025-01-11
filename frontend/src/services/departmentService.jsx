@@ -53,6 +53,15 @@ export const assignUserToDepartment = async (userId, departmentId) => {
     return response.data;
 };
 
+export const updateUserPermissions = async (userId, departmentId) => {
+    try {
+        await axios.put(`${API_BASE_URL}/permissions/update-user-department-permissions/${userId}`, { departmentId });
+    } catch (err) {
+        console.error("Error updating user permissions:", err);
+        throw err;
+    }
+};
+
 
 // Cập nhật quyền của phòng ban và đồng bộ quyền user
 export const updateDepartmentPermissions = async (departmentId, permissionIds) => {

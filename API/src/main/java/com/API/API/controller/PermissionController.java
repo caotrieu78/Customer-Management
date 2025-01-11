@@ -48,6 +48,8 @@ public class PermissionController {
         return ResponseEntity.ok(userPermissions);
     }
 
+
+
     @PostMapping("/{userId}/assign-department/{departmentId}")
     public ResponseEntity<String> assignUserToDepartmentAndPermissions(
             @PathVariable Integer userId,

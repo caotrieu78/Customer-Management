@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUserById, updateUser } from "../../services/authService";
-import { getAllDepartments } from "../../services/departmentService";
+import { getAllDepartments, updateUserPermissions } from "../../services/departmentService"; // Ensure this is correct
 
 function EditUser() {
     const { id } = useParams(); // Get user ID from URL
@@ -11,9 +11,9 @@ function EditUser() {
         fullName: "",
         email: "",
         role: "",
-        departmentId: "", // Mới thêm trường departmentId
+        departmentId: "", // Department ID (new field)
     });
-    const [departments, setDepartments] = useState([]); // Danh sách các phòng ban
+    const [departments, setDepartments] = useState([]); // List of departments
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState(""); // State for success message
 
@@ -53,9 +53,16 @@ function EditUser() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await updateUser(id, formData); // Update user details
+            // Update user details
+            const updatedUser = await updateUser(id, formData);
             setSuccessMessage("User updated successfully!");
             setError("");
+
+            // After updating the user, check if the department has changed
+            if (formData.departmentId !== updatedUser.department?.departmentId) {
+                // Update user permissions based on the new department
+                await updateUserPermissions(id, formData.departmentId);
+            }
 
             // Clear the success message after 3 seconds
             setTimeout(() => {
@@ -127,7 +134,7 @@ function EditUser() {
                     </select>
                 </div>
 
-                {/* Dropdown phòng ban */}
+                {/* Dropdown for selecting department */}
                 <div className="mb-3">
                     <label className="form-label">Department</label>
                     <select

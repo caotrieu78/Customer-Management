@@ -53,7 +53,11 @@ public class DepartmentController {
     }
     @GetMapping("/{departmentId}/users")
     public List<User> getUsersByDepartmentId(@PathVariable Integer departmentId) {
-        return userService.getUsersByDepartmentId(departmentId);
+        try {
+            return userService.getUsersByDepartmentId(departmentId);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching users for department: " + e.getMessage());
+        }
     }
     // Delete department by ID
     @DeleteMapping("/{id}")
