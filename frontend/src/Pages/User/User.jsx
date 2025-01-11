@@ -110,14 +110,20 @@ function User() {
                     style={{
                         color: "#0056b3",
                         fontWeight: "bold",
-                        textTransform: "uppercase"
+                        textTransform: "uppercase",
                     }}
                 >
                     <i className="bi bi-people-fill me-2"></i>Danh sách User
                 </h1>
-                <NavLink to={PATHS.ADD_USER} className="btn btn-primary">
-                    Thêm User
-                </NavLink>
+
+                <div>
+                    <NavLink to={PATHS.ADD_USER} className="btn btn-primary me-2">
+                        Thêm User
+                    </NavLink>
+                    <NavLink to={PATHS.DEPARTMENTS} className="btn btn-secondary">
+                        Quản lý Phòng Ban
+                    </NavLink>
+                </div>
             </div>
 
             {/* Search and Filter */}
@@ -152,6 +158,7 @@ function User() {
                             <th>Full Name</th>
                             <th>Email</th>
                             <th>Role</th>
+                            <th>Department</th> {/* New column for department */}
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -163,6 +170,7 @@ function User() {
                                 <td>{user.fullName}</td>
                                 <td>{user.email}</td>
                                 <td>{user.role}</td>
+                                <td>{user.department ? user.department.departmentName : 'N/A'}</td> {/* Display department name */}
                                 <td>
                                     <NavLink
                                         to={`${PATHS.EDIT_USER}/${user.userId}`}

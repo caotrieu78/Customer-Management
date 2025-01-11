@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
@@ -34,7 +33,7 @@ public class UserController {
                     true,
                     loggedInUser.getUserId(),
                     loggedInUser.getUsername(),
-                    loggedInUser.getRole().toString() // Trả về vai trò của người dùng
+                    loggedInUser.getRole().toString()
             ));
         } else {
             return ResponseEntity.status(401).body(new LoginResponse(
@@ -47,13 +46,9 @@ public class UserController {
         }
     }
 
-
-
     // GET: /api/users
-
     @GetMapping
     public List<UserWithDepartmentResponse> getAllUsers() {
-        // Lấy danh sách tất cả người dùng từ UserService
         return userService.getAllUsers().stream()
                 .map(user -> new UserWithDepartmentResponse(
                         user.getUserId(),
@@ -65,45 +60,48 @@ public class UserController {
                         user.getAvatar(),
                         user.getCreatedAt(),
                         user.getUpdatedAt(),
-                        user.getDepartment() // Thông tin phòng ban
+                        user.getDepartment() // Trả về null nếu không có phòng ban
                 ))
-                .toList(); // Chuyển đổi thành danh sách
+                .toList();
     }
 
     // GET: /api/users/{id}
     @GetMapping("/{id}")
     public ResponseEntity<?> getUserById(@PathVariable Integer id) {
         return userService.getUserById(id)
-                .map(user -> {
-                    // Trả về JSON với cả thông tin user và department
-                    return ResponseEntity.ok(new UserWithDepartmentResponse(
-                            user.getUserId(),
-                            user.getUsername(),
-                            user.getPassword(),
-                            user.getFullName(),
-                            user.getEmail(),
-                            user.getRole(),
-                            user.getAvatar(),
-                            user.getCreatedAt(),
-                            user.getUpdatedAt(),
-                            user.getDepartment() // Trả về thông tin phòng ban
-                    ));
-                })
+                .map(user -> ResponseEntity.ok(new UserWithDepartmentResponse(
+                        user.getUserId(),
+                        user.getUsername(),
+                        user.getPassword(),
+                        user.getFullName(),
+                        user.getEmail(),
+                        user.getRole(),
+                        user.getAvatar(),
+                        user.getCreatedAt(),
+                        user.getUpdatedAt(),
+                        user.getDepartment()
+                )))
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST: /api/users
     @PostMapping
-    public User createUser(@RequestBody User user) {
-        return userService.createUser(user);
+    public ResponseEntity<?> createUser(@RequestBody User user) {
+        try {
+            // Tạo user và tự động gán quyền từ phòng ban
+            User createdUser = userService.createUser(user);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+        }
     }
+
 
     // PUT: /api/users/{id}
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Integer id,
                                            @RequestParam(value = "file", required = false) MultipartFile file,
                                            @RequestParam("username") String username,
-                                            @RequestParam("fullName") String fullName,
+                                           @RequestParam("fullName") String fullName,
                                            @RequestParam("email") String email,
                                            @RequestParam("role") String role) {
         try {
@@ -119,22 +117,8 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-    // Gán người dùng vào phòng ban và kế thừa quyền
-    @PutMapping("/{userId}/department/{departmentId}")
-    public ResponseEntity<String> addUserToDepartment(
-            @PathVariable Integer userId,
-            @PathVariable Integer departmentId
-    ) {
-        try {
-            User user = userService.addUserToDepartment(userId, departmentId);
-            return ResponseEntity.ok("User with ID: " + userId +
-                    " has been added to department with ID: " + departmentId +
-                    " and inherited permissions.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        }
-    }
-    // DELETE: /api/users/{id}
+
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable Integer id) {
         userService.deleteUser(id);

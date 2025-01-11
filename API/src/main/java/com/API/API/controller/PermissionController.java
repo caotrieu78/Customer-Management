@@ -3,6 +3,7 @@ package com.API.API.controller;
 import com.API.API.model.Permission;
 import com.API.API.service.PermissionService;
 import com.API.API.service.UserPermissionService;
+import com.API.API.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +19,8 @@ public class PermissionController {
 
     @Autowired
     private UserPermissionService userPermissionService;
+    @Autowired
+    private UserService userService;
 
     // Get all permissions
     @GetMapping("/all")
@@ -44,5 +47,38 @@ public class PermissionController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(userPermissions);
+    }
+
+    @PostMapping("/{userId}/assign-department/{departmentId}")
+    public ResponseEntity<String> assignUserToDepartmentAndPermissions(
+            @PathVariable Integer userId,
+            @PathVariable Integer departmentId) {
+
+        try {
+            // Gán user vào phòng ban và gán quyền từ phòng ban
+            userService.addUserToDepartmentWithPermissions(userId, departmentId);
+            return ResponseEntity.ok("User đã được gán vào phòng ban và quyền được cập nhật từ phòng ban.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi gán quyền: " + e.getMessage());
+        }
+    }
+
+    // Cập nhật quyền của phòng ban và đồng bộ quyền user
+    @PutMapping("/update-department-permissions/{departmentId}")
+    public ResponseEntity<String> updateDepartmentPermissions(
+            @PathVariable Integer departmentId,
+            @RequestBody List<Integer> permissionIds) {
+
+        try {
+            // Cập nhật quyền của phòng ban
+            permissionService.updateDepartmentPermissions(departmentId, permissionIds);
+
+            // Cập nhật quyền của user thuộc phòng ban
+            userService.updateUserPermissionsByDepartment(departmentId);
+
+            return ResponseEntity.ok("Quyền phòng ban và quyền của user đã được cập nhật.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi cập nhật quyền: " + e.getMessage());
+        }
     }
 }

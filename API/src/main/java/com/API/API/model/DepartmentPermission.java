@@ -15,16 +15,16 @@ public class DepartmentPermission {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "departmentID", nullable = false)
-    private Department department;
+    private Department department; // Mối quan hệ với bảng department
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "permissionID", nullable = false)
-    private Permission permission;
+    private Permission permission; // Mối quan hệ với bảng permission
 
     @Column(nullable = false, updatable = false)
-    private LocalDateTime assignedAt = LocalDateTime.now(); // Default to the current timestamp
+    private LocalDateTime assignedAt = LocalDateTime.now(); // Thời gian gán mặc định hiện tại
 
-    // Getters and Setters
+    // Getters và Setters
     public Integer getDepartmentPermissionID() {
         return departmentPermissionID;
     }

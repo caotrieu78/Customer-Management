@@ -2,7 +2,22 @@
 CREATE DATABASE IF NOT EXISTS CustomerManagementDB;
 USE CustomerManagementDB;
 
+
+CREATE TABLE IF NOT EXISTS department (
+    DepartmentID INT AUTO_INCREMENT PRIMARY KEY,
+    DepartmentName VARCHAR(255) NOT NULL UNIQUE COMMENT 'Tên phòng ban',
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+INSERT INTO department (DepartmentName)
+VALUES
+    ('Human Resources'),        -- Phòng Nhân sự
+    ('IT Department'),          -- Phòng Công nghệ thông tin
+    ('Finance Department'),     -- Phòng Tài chính
+    ('Sales Department'),       -- Phòng Kinh doanh
+    ('Marketing Department');   -- Phòng Marketing
 -- Bảng người dùng (User) với vai trò Admin, Staff, Manager
+
 CREATE TABLE IF NOT EXISTS user (
     UserID INT PRIMARY KEY AUTO_INCREMENT,
     Username VARCHAR(255) NOT NULL UNIQUE,
@@ -36,19 +51,7 @@ VALUES
     ('Quản lý thanh toán', 'bi-credit-card'),
     ('Thống kê và báo cáo', 'bi-graph-up-arrow');
 
-CREATE TABLE IF NOT EXISTS department (
-    DepartmentID INT AUTO_INCREMENT PRIMARY KEY,
-    DepartmentName VARCHAR(255) NOT NULL UNIQUE COMMENT 'Tên phòng ban',
-    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UpdatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-INSERT INTO department (DepartmentName)
-VALUES
-    ('Human Resources'),        -- Phòng Nhân sự
-    ('IT Department'),          -- Phòng Công nghệ thông tin
-    ('Finance Department'),     -- Phòng Tài chính
-    ('Sales Department'),       -- Phòng Kinh doanh
-    ('Marketing Department');   -- Phòng Marketing
+
 
 CREATE TABLE IF NOT EXISTS user_department (
     UserDepartmentID INT AUTO_INCREMENT PRIMARY KEY,
@@ -184,7 +187,7 @@ CREATE TABLE IF NOT EXISTS event_notifications (
     Status ENUM('Success', 'Failed', 'Pending') DEFAULT 'Pending', -- Trạng thái thông báo
      sentAt TIMESTAMP NULL DEFAULT NULL, -- Thời gian gửi thông báo (cho phép NULL)
     Message TEXT, -- Nội dung thông báo
-    -- AttachmentPath  VARCHAR(255) NULL, -- Thêm cột hình ảnh (Đường dẫn hình ảnh)
+    AttachmentPath  VARCHAR(255) NULL, -- Thêm cột hình ảnh (Đường dẫn hình ảnh)
     FOREIGN KEY (EventUserID) REFERENCES event_users(EventUserID) ON DELETE CASCADE -- Liên kết đến bảng event_users
 );
 

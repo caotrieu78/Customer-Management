@@ -43,7 +43,7 @@ export const getAllPermissions = async () => {
 };
 // 2. Get Permissions by User ID
 export const getPermissionsByUserId = async (userId) => {
-    const response = await axios.get(`${API_BASE_URL}/permissions/${userId}`);
+    const response = await axios.get(`${API_BASE_URL}/permissions/user/${userId}`);
     return response.data; // Returning permissions for a specific user
 };
 

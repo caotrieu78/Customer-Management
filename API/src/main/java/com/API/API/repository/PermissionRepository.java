@@ -16,4 +16,5 @@ public interface PermissionRepository extends JpaRepository<Permission, Integer>
     // Tìm danh sách Permission dựa trên Department ID
     @Query("SELECT dp.permission FROM DepartmentPermission dp WHERE dp.department.departmentId = :departmentId")
     List<Permission> findPermissionsByDepartmentId(@Param("departmentId") Integer departmentId);
+    
 }

@@ -1,6 +1,5 @@
 package com.API.API.service;
 
-import com.API.API.config.FileUtils;
 import com.API.API.model.Department;
 import com.API.API.model.Permission;
 import com.API.API.model.User;
@@ -31,18 +30,18 @@ public class UserService {
     private DepartmentRepository departmentRepository;
 
     @Autowired
-    private PermissionRepository permissionRepository;
-
-    @Autowired
     private UserPermissionRepository userPermissionRepository;
 
-    // Hàm mã hóa mật khẩu bằng SHA-256
+    @Autowired
+    private PermissionRepository permissionRepository;
+
+    /**
+     * Mã hóa mật khẩu bằng SHA-256
+     */
     private String hashPassword(String password) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hashedBytes = digest.digest(password.getBytes(StandardCharsets.UTF_8));
-
-            // Chuyển đổi byte[] thành chuỗi Hexadecimal
             try (Formatter formatter = new Formatter()) {
                 for (byte b : hashedBytes) {
                     formatter.format("%02x", b);
@@ -54,103 +53,150 @@ public class UserService {
         }
     }
 
-    // Xác thực đăng nhập
+    /**
+     * Đăng nhập người dùng
+     */
     public Optional<User> login(String username, String password) {
-        // Mã hóa mật khẩu người dùng nhập vào
         String hashedPassword = hashPassword(password);
-
-        // So sánh với mật khẩu đã mã hóa trong cơ sở dữ liệu
         return userRepository.findByUsernameAndPassword(username, hashedPassword);
     }
 
-    // Tạo user mới và gán quyền từ phòng ban
+    /**
+     * Tạo người dùng mới
+     */
     public User createUser(User user) {
         // Mã hóa mật khẩu trước khi lưu
         user.setPassword(hashPassword(user.getPassword()));
 
-        // Lưu user mới
+        // Gán phòng ban nếu có
+        if (user.getDepartment() != null && user.getDepartment().getDepartmentId() != null) {
+            Department department = departmentRepository.findById(user.getDepartment().getDepartmentId())
+                    .orElseThrow(() -> new RuntimeException("Department not found"));
+            user.setDepartment(department); // Gán phòng ban cho user
+        } else {
+            user.setDepartment(null); // Nếu không có departmentId, đặt null
+        }
+
+        // Lưu user vào cơ sở dữ liệu
         User savedUser = userRepository.save(user);
 
-        // Nếu user thuộc phòng ban, gán quyền từ phòng ban cho user
+        // Gán quyền từ phòng ban nếu user thuộc phòng ban
         if (savedUser.getDepartment() != null) {
-            assignPermissionsFromDepartment(savedUser, savedUser.getDepartment().getDepartmentId());
+            List<Permission> departmentPermissions = permissionRepository.findPermissionsByDepartmentId(savedUser.getDepartment().getDepartmentId());
+            for (Permission permission : departmentPermissions) {
+                UserPermission userPermission = new UserPermission();
+                userPermission.setUser(savedUser); // Gán user vào quyền
+                userPermission.setPermission(permission); // Gán quyền từ phòng ban
+                userPermissionRepository.save(userPermission); // Lưu quyền vào cơ sở dữ liệu
+            }
         }
 
         return savedUser;
     }
 
-    // Gán user vào phòng ban và kế thừa quyền
-    public User addUserToDepartment(Integer userId, Integer departmentId) {
+
+    /**
+     * Gán user vào phòng ban và tự động gán quyền của phòng ban
+     */
+    public void addUserToDepartmentWithPermissions(Integer userId, Integer departmentId) {
+        // Lấy user
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
+        // Lấy department
         Department department = departmentRepository.findById(departmentId)
                 .orElseThrow(() -> new IllegalArgumentException("Department not found with ID: " + departmentId));
 
-        // Cập nhật phòng ban cho người dùng
+        // Gán phòng ban cho user
         user.setDepartment(department);
         userRepository.save(user);
 
-        // Gán quyền từ phòng ban cho người dùng
-        assignPermissionsFromDepartment(user, departmentId);
-
-        return user;
-    }
-
-    // Gán quyền từ phòng ban cho user
-    // Gán tất cả các quyền từ phòng ban cho người dùng
-    private void assignPermissionsFromDepartment(User user, Integer departmentId) {
+        // Lấy quyền của phòng ban
         List<Permission> departmentPermissions = permissionRepository.findPermissionsByDepartmentId(departmentId);
 
+        // Xóa quyền cũ của user
+        userPermissionRepository.deleteByUser_UserId(user.getUserId());
+
+        // Gán quyền phòng ban cho user
         for (Permission permission : departmentPermissions) {
-            if (!userPermissionRepository.existsByUserAndPermission(user, permission)) {
-                userPermissionRepository.save(new UserPermission(user, permission));
+            UserPermission userPermission = new UserPermission();
+            userPermission.setUser(user);
+            userPermission.setPermission(permission);
+            userPermissionRepository.save(userPermission);
+        }
+    }
+
+    /**
+     * Cập nhật quyền của tất cả user trong phòng ban
+     */
+    public void updateUserPermissionsByDepartment(Integer departmentId) {
+        // Lấy tất cả user trong phòng ban
+        List<User> users = userRepository.findByDepartment_DepartmentId(departmentId);
+
+        // Lấy quyền của phòng ban
+        List<Permission> departmentPermissions = permissionRepository.findPermissionsByDepartmentId(departmentId);
+
+        for (User user : users) {
+            // Xóa quyền cũ của user
+            userPermissionRepository.deleteByUser_UserId(user.getUserId());
+
+            // Gán quyền phòng ban cho user
+            for (Permission permission : departmentPermissions) {
+                UserPermission userPermission = new UserPermission();
+                userPermission.setUser(user);
+                userPermission.setPermission(permission);
+                userPermissionRepository.save(userPermission);
             }
         }
     }
 
-    // Cập nhật thông tin user
-
+    /**
+     * Cập nhật thông tin người dùng
+     */
     public User updateUser(Integer id, User updatedUser, MultipartFile file) throws IOException {
         return userRepository.findById(id)
                 .map(user -> {
-                    // Cập nhật thông tin cơ bản
                     user.setUsername(updatedUser.getUsername());
                     user.setFullName(updatedUser.getFullName());
                     user.setEmail(updatedUser.getEmail());
                     user.setRole(updatedUser.getRole());
 
-                    // Kiểm tra nếu có file tải lên
                     if (file != null && !file.isEmpty()) {
-                        try {
-                            // Lưu avatar mới
-                            String avatarUrl = FileUtils.saveAvatar(file);
-                            user.setAvatar(avatarUrl); // Cập nhật avatar mới
-                        } catch (IOException e) {
-                            throw new RuntimeException("Error saving avatar", e);
-                        }
-                    } else {
-                        // Nếu không có file tải lên, giữ nguyên avatar hiện tại
-                        user.setAvatar(user.getAvatar());
+                        String avatarUrl = saveAvatar(file);
+                        user.setAvatar(avatarUrl);
                     }
 
-                    return userRepository.save(user); // Lưu thông tin người dùng
+                    return userRepository.save(user);
                 })
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    /**
+     * Lưu avatar
+     */
+    private String saveAvatar(MultipartFile file) {
+        // Mock logic lưu avatar
+        return "avatar_url";
+    }
 
-    // Xóa user
+    /**
+     * Xóa người dùng
+     */
     public void deleteUser(Integer id) {
+        userPermissionRepository.deleteByUser_UserId(id); // Xóa quyền liên quan đến user
         userRepository.deleteById(id);
     }
 
-    // Lấy danh sách tất cả user
+    /**
+     * Lấy danh sách tất cả người dùng
+     */
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
 
-    // Lấy thông tin user theo ID
+    /**
+     * Lấy thông tin người dùng theo ID
+     */
     public Optional<User> getUserById(Integer id) {
         return userRepository.findById(id);
     }

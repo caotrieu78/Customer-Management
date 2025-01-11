@@ -18,6 +18,9 @@ export const PATHS = {
     EDIT_USER: `${USER_PATH}/editUser`,
     PROFILE: "/Profile",
 
+
+    DEPARTMENTS: "/departments",  // Đường dẫn đến trang DepartmentList
+
     // Customer Management
     CUSTOMER: CUSTOMER_PATH,
     ADD_CUSTOMER: `${CUSTOMER_PATH}/addCustomer`,
