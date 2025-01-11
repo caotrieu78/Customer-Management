@@ -52,3 +52,50 @@ export const assignUserToDepartment = async (userId, departmentId) => {
     const response = await axios.post(`${API_BASE_URL}/users/${userId}/assign-department/${departmentId}`);
     return response.data;
 };
+
+
+// Cập nhật quyền của phòng ban và đồng bộ quyền user
+export const updateDepartmentPermissions = async (departmentId, permissionIds) => {
+    try {
+        // Gửi PUT request với departmentId và permissionIds
+        const response = await axios.put(
+            `${API_BASE_URL}/permissions/update-department-permissions/${departmentId}`,
+            permissionIds, // Body là danh sách permissionId
+            {
+                headers: {
+                    "Content-Type": "application/json", // Đảm bảo gửi dữ liệu dưới dạng JSON
+                },
+            }
+        );
+        return response.data; // Trả về kết quả nhận được từ API
+    } catch (error) {
+        console.error("Error updating department permissions:", error);
+        throw error; // Ném lỗi để có thể xử lý ở nơi gọi API
+    }
+};
+// Xóa quyền của phòng ban
+export const removePermissionFromDepartment = async (departmentId, permissionId) => {
+    try {
+        // Gửi DELETE request với departmentId và permissionId trên URL
+        const response = await axios.delete(`${API_BASE_URL}/permissions/remove-department-permission/${departmentId}/${permissionId}`, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        });
+        return response.data; // Trả về kết quả nhận được từ API
+    } catch (error) {
+        console.error("Error removing permission from department:", error);
+        throw error; // Ném lỗi để có thể xử lý ở nơi gọi API
+    }
+};
+
+// Lấy danh sách người dùng của phòng ban
+export const getUsersByDepartmentId = async (departmentId) => {
+    try {
+        const response = await axios.get(`${API_BASE_URL}/departments/${departmentId}/users`);
+        return response.data; // Trả về danh sách người dùng trong phòng ban
+    } catch (error) {
+        console.error("Error fetching users for department:", error);
+        throw error; // Ném lỗi nếu có vấn đề
+    }
+};

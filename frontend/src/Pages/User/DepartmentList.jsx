@@ -4,28 +4,30 @@ import {
     createDepartment,
     updateDepartment,
     deleteDepartment,
-    assignPermissionsToDepartment,
     getPermissionsByDepartmentId,
+    assignPermissionsToDepartment,
+    removePermissionFromDepartment,
+    getUsersByDepartmentId // API để lấy người dùng của phòng ban
 } from "../../services/departmentService";
 import { getAllPermissions } from "../../services/authService";
+import { updateDepartmentPermissions } from "../../services/departmentService";
 
 function DepartmentList() {
     const [departments, setDepartments] = useState([]);
     const [newDepartmentName, setNewDepartmentName] = useState("");
     const [editingDepartment, setEditingDepartment] = useState(null);
-    const [permissions, setPermissions] = useState([]); // Danh sách quyền
-    const [selectedPermissions, setSelectedPermissions] = useState([]); // Quyền được chọn
-    const [showPermissionsModal, setShowPermissionsModal] = useState(false); // Hiện modal gán quyền
-    const [showDetailsModal, setShowDetailsModal] = useState(false); // Hiện modal chi tiết quyền
-    const [targetDepartment, setTargetDepartment] = useState(null); // Phòng ban đang gán quyền
-    const [departmentPermissions, setDepartmentPermissions] = useState([]); // Quyền của phòng ban
+    const [allPermissions, setAllPermissions] = useState([]); // Tất cả quyền
+    const [departmentPermissions, setDepartmentPermissions] = useState([]); // Quyền hiện có của phòng ban
+    const [targetDepartment, setTargetDepartment] = useState(null); // Phòng ban đang thao tác
+    const [targetUsers, setTargetUsers] = useState([]); // Người dùng của phòng ban
     const [error, setError] = useState("");
-    const [message, setMessage] = useState("");
+    const [successMessage, setSuccessMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false); // Để quản lý trạng thái loading
 
     // Fetch departments and permissions on mount
     useEffect(() => {
         fetchDepartments();
-        fetchPermissions();
+        fetchAllPermissions();
     }, []);
 
     const fetchDepartments = async () => {
@@ -38,10 +40,10 @@ function DepartmentList() {
         }
     };
 
-    const fetchPermissions = async () => {
+    const fetchAllPermissions = async () => {
         try {
             const data = await getAllPermissions();
-            setPermissions(data);
+            setAllPermissions(data);
         } catch (err) {
             console.error("Error fetching permissions:", err);
             setError("Failed to fetch permissions.");
@@ -55,14 +57,14 @@ function DepartmentList() {
         }
         try {
             await createDepartment({ departmentName: newDepartmentName });
-            setMessage("Department created successfully.");
+            setSuccessMessage("Department created successfully.");
             setError("");
             setNewDepartmentName("");
             fetchDepartments();
         } catch (err) {
             console.error("Error creating department:", err);
-            setError("Failed to create department. Ensure the name is unique.");
-            setMessage("");
+            setError("Failed to create department.");
+            setSuccessMessage("");
         }
     };
 
@@ -75,14 +77,14 @@ function DepartmentList() {
             await updateDepartment(editingDepartment.departmentId, {
                 departmentName: editingDepartment.departmentName,
             });
-            setMessage("Department updated successfully.");
+            setSuccessMessage("Department updated successfully.");
             setError("");
             setEditingDepartment(null);
             fetchDepartments();
         } catch (err) {
             console.error("Error updating department:", err);
-            setError("Failed to update department. Ensure the name is unique.");
-            setMessage("");
+            setError("Failed to update department.");
+            setSuccessMessage("");
         }
     };
 
@@ -91,78 +93,89 @@ function DepartmentList() {
 
         try {
             await deleteDepartment(id);
-            setMessage("Department deleted successfully.");
+            setSuccessMessage("Department deleted successfully.");
             setError("");
             fetchDepartments();
         } catch (err) {
             console.error("Error deleting department:", err);
             setError("Failed to delete department.");
-            setMessage("");
+            setSuccessMessage("");
         }
     };
 
-    const openPermissionsModal = (departmentId) => {
+    const openPermissionsModal = async (departmentId) => {
         setTargetDepartment(departmentId);
-        setSelectedPermissions([]); // Reset danh sách quyền được chọn
-        setShowPermissionsModal(true);
-    };
-
-    // Handle permission selection
-    const handlePermissionChange = (e) => {
-        const { value, checked } = e.target;
-        const permissionId = parseInt(value, 10); // Chuyển đổi giá trị sang số
-        if (isNaN(permissionId)) {
-            console.error("Invalid permissionId:", value);
-            return;
-        }
-
-        setSelectedPermissions((prev) =>
-            checked
-                ? [...prev, permissionId] // Thêm quyền
-                : prev.filter((id) => id !== permissionId) // Loại bỏ quyền
-        );
-    };
-
-    const handleAssignPermissions = async () => {
-        if (!targetDepartment || selectedPermissions.length === 0) {
-            setError("Please select a department and at least one permission.");
-            return;
-        }
+        setError(""); // Reset lỗi cũ
+        setSuccessMessage(""); // Reset thông báo cũ
 
         try {
-            console.log("Assigning permissions:", {
-                departmentId: targetDepartment,
-                permissionIds: selectedPermissions,
-            });
+            const permissionsData = await getPermissionsByDepartmentId(departmentId);
 
-            await assignPermissionsToDepartment(targetDepartment, selectedPermissions);
-
-            setMessage("Permissions assigned successfully.");
-            setError("");
-            setShowPermissionsModal(false);
-            setSelectedPermissions([]);
-        } catch (err) {
-            console.error("Error assigning permissions:", err);
-            setError("Failed to assign permissions. Please try again.");
-            setMessage("");
-        }
-    };
-
-    const openDetailsModal = async (departmentId) => {
-        try {
-            const data = await getPermissionsByDepartmentId(departmentId);
-            setDepartmentPermissions(data);
-            setShowDetailsModal(true);
+            // Nếu không có quyền nào được gán, đặt departmentPermissions là mảng trống
+            setDepartmentPermissions(permissionsData.map((perm) => perm.permissionID));
         } catch (err) {
             console.error("Error fetching department permissions:", err);
-            setError("Failed to fetch department permissions.");
+            setError("Unable to fetch permissions for the selected department. Please try again later.");
+            setDepartmentPermissions([]); // Đảm bảo không lỗi nếu API trả về lỗi
+        }
+    };
+
+    const openUsersModal = async (departmentId) => {
+        setTargetDepartment(departmentId);
+        setError(""); // Reset lỗi cũ
+        setSuccessMessage(""); // Reset thông báo cũ
+
+        try {
+            const usersData = await getUsersByDepartmentId(departmentId);
+            setTargetUsers(usersData); // Cập nhật danh sách người dùng
+        } catch (err) {
+            console.error("Error fetching department users:", err);
+            setError("Unable to fetch users for the selected department.");
+        }
+    };
+
+    const handleAddPermission = async (permissionId) => {
+        try {
+            await assignPermissionsToDepartment(targetDepartment, [permissionId]); // Gán quyền mới
+            setDepartmentPermissions([...departmentPermissions, permissionId]); // Cập nhật trạng thái local
+
+            // Gọi API đồng bộ quyền của phòng ban và user
+            await updateDepartmentPermissions(targetDepartment, [...departmentPermissions, permissionId]);
+
+            setSuccessMessage("Permission added and synced successfully.");
+        } catch (err) {
+            console.error("Error adding permission:", err);
+            setError("Failed to add permission.");
+        }
+    };
+
+    const handleRemovePermission = async (permissionId) => {
+        setIsLoading(true);
+        setError(null);
+        setSuccessMessage(null);
+
+        try {
+            // Sử dụng targetDepartment (departmentId) và permissionId để xóa quyền
+            await removePermissionFromDepartment(targetDepartment, permissionId);
+
+            // Cập nhật lại danh sách quyền sau khi xóa quyền
+            setDepartmentPermissions((prevPermissions) =>
+                prevPermissions.filter((id) => id !== permissionId) // Loại bỏ quyền đã xóa khỏi danh sách
+            );
+
+            setSuccessMessage("Permission removed successfully.");
+        } catch (error) {
+            setError("Failed to remove permission.");
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
         <div className="container mt-4">
             <h1>Department Management</h1>
-            {message && <div className="alert alert-success">{message}</div>}
+
+            {successMessage && <div className="alert alert-success">{successMessage}</div>}
             {error && <div className="alert alert-danger">{error}</div>}
 
             <div className="mb-4">
@@ -242,16 +255,16 @@ function DepartmentList() {
                                             Delete
                                         </button>
                                         <button
+                                            className="btn btn-info btn-sm ms-2"
+                                            onClick={() => openUsersModal(department.departmentId)}
+                                        >
+                                            Show Users
+                                        </button>
+                                        <button
                                             className="btn btn-secondary btn-sm ms-2"
                                             onClick={() => openPermissionsModal(department.departmentId)}
                                         >
-                                            Assign Permissions
-                                        </button>
-                                        <button
-                                            className="btn btn-info btn-sm ms-2"
-                                            onClick={() => openDetailsModal(department.departmentId)}
-                                        >
-                                            View Details
+                                            Manage Permissions
                                         </button>
                                     </>
                                 )}
@@ -261,80 +274,36 @@ function DepartmentList() {
                 </tbody>
             </table>
 
-            {/* Permissions Modal */}
-            {showPermissionsModal && (
+            {/* Users Modal */}
+            {targetDepartment && (
                 <div className="modal show" style={{ display: "block" }} tabIndex="-1">
                     <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title">Assign Permissions</h5>
+                                <h5 className="modal-title">Users in Department</h5>
                                 <button
                                     type="button"
                                     className="btn-close"
-                                    data-bs-dismiss="modal"
-                                    aria-label="Close"
-                                    onClick={() => setShowPermissionsModal(false)}
+                                    onClick={() => setTargetDepartment(null)}
                                 ></button>
                             </div>
                             <div className="modal-body">
-                                {permissions.map((permission) => (
-                                    <div className="form-check" key={permission.permissionID}>
-                                        <input
-                                            className="form-check-input"
-                                            type="checkbox"
-                                            id={`permission-${permission.permissionID}`}
-                                            value={permission.permissionID}
-                                            onChange={handlePermissionChange}
-                                        />
-                                        <label className="form-check-label" htmlFor={`permission-${permission.permissionID}`}>
-                                            {permission.name}
-                                        </label>
-                                    </div>
-                                ))}
+                                {targetUsers.length === 0 ? (
+                                    <p>No users available in this department.</p>
+                                ) : (
+                                    targetUsers.map((user) => (
+                                        <div key={user.userId} className="d-flex align-items-center mb-2">
+                                            <span className="me-2">{user.fullName}</span>
+                                        </div>
+                                    ))
+                                )}
                             </div>
-                            <div className="modal-footer">
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={() => setShowPermissionsModal(false)}
-                                >
-                                    Close
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    onClick={handleAssignPermissions}
-                                >
-                                    Assign Permissions
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
 
-            {/* Details Modal */}
-            {showDetailsModal && (
-                <div className="modal show" style={{ display: "block", backgroundColor: "rgba(0, 0, 0, 0.5)" }}>
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h5 className="modal-title">Department Permissions</h5>
-                                <button
-                                    type="button"
-                                    className="btn-close"
-                                    onClick={() => setShowDetailsModal(false)}
-                                ></button>
-                            </div>
-                            <div className="modal-body">
-                                <ul>
-                                    {departmentPermissions.map((permission) => (
-                                        <li key={permission.permissionId}>{permission.name}</li>
-                                    ))}
-                                </ul>
-                            </div>
                             <div className="modal-footer">
-                                <button className="btn btn-secondary" onClick={() => setShowDetailsModal(false)}>
+                                <button
+                                    className="btn btn-secondary"
+                                    onClick={() => setTargetDepartment(null)}
+                                >
                                     Close
                                 </button>
                             </div>

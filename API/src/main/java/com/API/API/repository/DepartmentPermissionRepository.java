@@ -20,5 +20,5 @@ public interface DepartmentPermissionRepository extends JpaRepository<Department
 
     // Check if a permission exists for a department
     boolean existsByDepartmentAndPermission(Department department, Permission permission);
-    void deleteByDepartment_DepartmentId(Integer departmentId);
+    Optional<DepartmentPermission> findByDepartment_DepartmentIdAndPermission_PermissionID(Integer departmentId, Integer permissionId);
 }

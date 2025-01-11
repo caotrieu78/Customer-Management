@@ -1,7 +1,9 @@
 package com.API.API.controller;
 
 import com.API.API.model.Department;
+import com.API.API.model.User;
 import com.API.API.service.DepartmentService;
+import com.API.API.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +16,8 @@ public class DepartmentController {
 
     @Autowired
     private DepartmentService departmentService;
+    @Autowired
+    private UserService userService;
 
     // Get all departments
     @GetMapping
@@ -47,7 +51,10 @@ public class DepartmentController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
+    @GetMapping("/{departmentId}/users")
+    public List<User> getUsersByDepartmentId(@PathVariable Integer departmentId) {
+        return userService.getUsersByDepartmentId(departmentId);
+    }
     // Delete department by ID
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteDepartment(@PathVariable Integer id) {

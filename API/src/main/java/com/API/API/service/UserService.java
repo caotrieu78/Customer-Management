@@ -8,6 +8,7 @@ import com.API.API.repository.DepartmentRepository;
 import com.API.API.repository.PermissionRepository;
 import com.API.API.repository.UserPermissionRepository;
 import com.API.API.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -129,6 +130,7 @@ public class UserService {
     /**
      * Cập nhật quyền của tất cả user trong phòng ban
      */
+    @Transactional
     public void updateUserPermissionsByDepartment(Integer departmentId) {
         // Lấy tất cả user trong phòng ban
         List<User> users = userRepository.findByDepartment_DepartmentId(departmentId);
@@ -137,18 +139,20 @@ public class UserService {
         List<Permission> departmentPermissions = permissionRepository.findPermissionsByDepartmentId(departmentId);
 
         for (User user : users) {
-            // Xóa quyền cũ của user
-            userPermissionRepository.deleteByUser_UserId(user.getUserId());
-
-            // Gán quyền phòng ban cho user
+            // Kiểm tra và thêm quyền mới cho mỗi user nếu quyền chưa có
             for (Permission permission : departmentPermissions) {
-                UserPermission userPermission = new UserPermission();
-                userPermission.setUser(user);
-                userPermission.setPermission(permission);
-                userPermissionRepository.save(userPermission);
+                Optional<UserPermission> existingUserPermission = userPermissionRepository.findByUserAndPermission(user, permission);
+                if (existingUserPermission.isEmpty()) {
+                    // Nếu quyền chưa tồn tại, thêm quyền vào user
+                    UserPermission userPermission = new UserPermission();
+                    userPermission.setUser(user);
+                    userPermission.setPermission(permission);
+                    userPermissionRepository.save(userPermission);
+                }
             }
         }
     }
+
 
     /**
      * Cập nhật thông tin người dùng
@@ -171,6 +175,28 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
 
+    // Phương thức lấy người dùng của phòng ban
+    public List<User> getUsersByDepartmentId(Integer departmentId) {
+        return userRepository.findByDepartment_DepartmentId(departmentId); // Tìm người dùng theo departmentId
+    }
+    @Transactional
+    public void removePermissionFromUsersByDepartment(Integer departmentId, Integer permissionId) {
+        // Lấy tất cả người dùng thuộc phòng ban
+        List<User> users = userRepository.findByDepartment_DepartmentId(departmentId);
+
+        // Lấy quyền cần xóa
+        Permission permissionToRemove = permissionRepository.findById(permissionId)
+                .orElseThrow(() -> new RuntimeException("Permission not found"));
+
+        for (User user : users) {
+            // Tìm và xóa quyền khỏi người dùng nếu quyền tồn tại
+            Optional<UserPermission> userPermission = userPermissionRepository.findByUserAndPermission(user, permissionToRemove);
+            if (userPermission.isPresent()) {
+                // Xóa quyền khỏi người dùng
+                userPermissionRepository.delete(userPermission.get());
+            }
+        }
+    }
     /**
      * Lưu avatar
      */

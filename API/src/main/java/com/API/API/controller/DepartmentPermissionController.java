@@ -17,19 +17,11 @@ public class DepartmentPermissionController {
     // Assign permissions to a department
     @PostMapping("/assign")
     public ResponseEntity<String> assignPermissionsToDepartment(@RequestBody AssignPermissionsRequest request) {
-        System.out.println("Received departmentId: " + request.getDepartmentId());
-        System.out.println("Received permissionIds: " + request.getPermissionIds());
-
         if (request.getDepartmentId() == null || request.getPermissionIds() == null || request.getPermissionIds().isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid request data: departmentId or permissionIds is null or empty.");
+            return ResponseEntity.badRequest().body("Invalid request data.");
         }
-        try {
-            departmentPermissionService.assignPermissionsToDepartment(request.getDepartmentId(), request.getPermissionIds());
-            return ResponseEntity.ok("Permissions assigned successfully.");
-        } catch (Exception e) {
-            e.printStackTrace(); // In lỗi đầy đủ
-            return ResponseEntity.status(500).body("An error occurred: " + e.getMessage());
-        }
+        departmentPermissionService.assignPermissionsToDepartment(request.getDepartmentId(), request.getPermissionIds());
+        return ResponseEntity.ok("Permissions assigned successfully.");
     }
 
     // Remove permission from a department
@@ -41,7 +33,6 @@ public class DepartmentPermissionController {
         departmentPermissionService.removePermissionFromDepartment(request.getDepartmentId(), request.getPermissionId());
         return ResponseEntity.ok("Permission removed successfully.");
     }
-
     public static class AssignPermissionsRequest {
         private Integer departmentId;
         private List<Integer> permissionIds;

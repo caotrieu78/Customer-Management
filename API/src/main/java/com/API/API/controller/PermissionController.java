@@ -33,11 +33,10 @@ public class PermissionController {
     @GetMapping("/{departmentId}")
     public ResponseEntity<List<Permission>> getPermissionsByDepartmentId(@PathVariable Integer departmentId) {
         List<Permission> permissions = permissionService.getPermissionsByDepartmentId(departmentId);
-        if (permissions.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        // Trả về danh sách trống nếu không có quyền nào
         return ResponseEntity.ok(permissions);
     }
+
 
     // Get permissions by userId
     @GetMapping("/user/{userId}")
@@ -68,7 +67,6 @@ public class PermissionController {
     public ResponseEntity<String> updateDepartmentPermissions(
             @PathVariable Integer departmentId,
             @RequestBody List<Integer> permissionIds) {
-
         try {
             // Cập nhật quyền của phòng ban
             permissionService.updateDepartmentPermissions(departmentId, permissionIds);
@@ -81,4 +79,22 @@ public class PermissionController {
             return ResponseEntity.status(500).body("Lỗi khi cập nhật quyền: " + e.getMessage());
         }
     }
+    @DeleteMapping("/remove-department-permission/{departmentId}/{permissionId}")
+    public ResponseEntity<String> removePermissionFromDepartmentAndSyncUsers(
+            @PathVariable Integer departmentId,
+            @PathVariable Integer permissionId) {
+        try {
+            // Bước 1: Xóa quyền khỏi phòng ban
+            permissionService.removePermissionFromDepartment(departmentId, permissionId);
+
+            // Bước 2: Cập nhật quyền cho các user thuộc phòng ban
+            userService.removePermissionFromUsersByDepartment(departmentId, permissionId);
+
+            return ResponseEntity.ok("Quyền đã được xóa khỏi phòng ban và đồng bộ với các user.");
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi xóa quyền và đồng bộ với user: " + e.getMessage());
+        }
+    }
+
+
 }
