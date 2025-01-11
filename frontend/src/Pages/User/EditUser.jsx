@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { getUserById, updateUser } from "../../services/authService";
-import { getAllDepartments, updateUserPermissions } from "../../services/departmentService"; // Ensure this is correct
+import { getAllDepartments, updateUserDepartmentAndPermissions } from "../../services/departmentService";
+// import { updateUserDepartmentAndPermissions } from "../../services/userService"; // Import API service
 
 function EditUser() {
     const { id } = useParams(); // Get user ID from URL
@@ -11,9 +12,9 @@ function EditUser() {
         fullName: "",
         email: "",
         role: "",
-        departmentId: "", // Department ID (new field)
+        departmentId: "", // Mới thêm trường departmentId
     });
-    const [departments, setDepartments] = useState([]); // List of departments
+    const [departments, setDepartments] = useState([]); // Danh sách các phòng ban
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState(""); // State for success message
 
@@ -53,21 +54,20 @@ function EditUser() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Update user details
-            const updatedUser = await updateUser(id, formData);
+            await updateUser(id, formData); // Update user details
             setSuccessMessage("User updated successfully!");
             setError("");
 
-            // After updating the user, check if the department has changed
-            if (formData.departmentId !== updatedUser.department?.departmentId) {
-                // Update user permissions based on the new department
-                await updateUserPermissions(id, formData.departmentId);
-            }
+            // Cập nhật phòng ban và quyền cho người dùng
+            await updateUserDepartmentAndPermissions(id, formData.departmentId); // Gọi API để cập nhật phòng ban và quyền
+
+            setSuccessMessage("User updated and department/permissions synchronized.");
+            setError("");
 
             // Clear the success message after 3 seconds
             setTimeout(() => {
                 setSuccessMessage("");
-                navigate("/user");
+                navigate("/user"); // Navigate to users page after success
             }, 2000);
         } catch (err) {
             console.error("Error updating user details:", err);
@@ -134,7 +134,7 @@ function EditUser() {
                     </select>
                 </div>
 
-                {/* Dropdown for selecting department */}
+                {/* Dropdown phòng ban */}
                 <div className="mb-3">
                     <label className="form-label">Department</label>
                     <select

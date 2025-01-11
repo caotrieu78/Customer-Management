@@ -1,5 +1,6 @@
 package com.API.API.controller;
 
+import com.API.API.dto.UpdateDepartmentPermissionsRequest;
 import com.API.API.model.Permission;
 import com.API.API.service.PermissionService;
 import com.API.API.service.UserPermissionService;
@@ -97,6 +98,23 @@ public class PermissionController {
             return ResponseEntity.status(500).body("Lỗi khi xóa quyền và đồng bộ với user: " + e.getMessage());
         }
     }
+
+    @PutMapping("/update-user-department-permissions/{userId}")
+    public ResponseEntity<String> updateUserDepartmentAndPermissions(
+            @PathVariable Integer userId,
+            @RequestBody UpdateDepartmentPermissionsRequest request) {
+        try {
+            // Cập nhật phòng ban và quyền cho người dùng
+            userService.updateUserDepartmentAndPermissions(userId, request.getDepartmentId());
+
+            return ResponseEntity.ok("Phòng ban và quyền của người dùng đã được cập nhật ngay lập tức.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(404).body("Lỗi: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Lỗi khi cập nhật phòng ban và quyền người dùng: " + e.getMessage());
+        }
+    }
+
 
 
 }

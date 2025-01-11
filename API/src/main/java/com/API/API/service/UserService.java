@@ -127,6 +127,40 @@ public class UserService {
         }
     }
 
+    @Transactional
+    public void updateUserDepartmentAndPermissions(Integer userId, Integer departmentId) {
+        // Lấy thông tin người dùng
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
+        // Lấy thông tin phòng ban
+        Department department = departmentRepository.findById(departmentId)
+                .orElseThrow(() -> new IllegalArgumentException("Department not found with ID: " + departmentId));
+
+        // Cập nhật phòng ban cho người dùng
+        user.setDepartment(department);
+        userRepository.save(user);  // Lưu thay đổi của người dùng vào cơ sở dữ liệu
+
+        // Lấy danh sách quyền của phòng ban
+        List<Permission> departmentPermissions = permissionRepository.findPermissionsByDepartmentId(departmentId);
+
+        // Xóa tất cả quyền cũ của người dùng
+        userPermissionRepository.deleteByUser_UserId(userId);
+
+        // Gán quyền từ phòng ban cho người dùng
+        for (Permission permission : departmentPermissions) {
+            // Kiểm tra xem quyền đã tồn tại trong bảng user_permissions chưa
+            boolean exists = userPermissionRepository.existsByUserAndPermission(user, permission);
+            if (!exists) {
+                UserPermission userPermission = new UserPermission();
+                userPermission.setUser(user);
+                userPermission.setPermission(permission);
+                userPermissionRepository.save(userPermission);  // Lưu quyền mới cho người dùng
+            }
+        }
+    }
+
+
     /**
      * Cập nhật quyền của tất cả user trong phòng ban
      */

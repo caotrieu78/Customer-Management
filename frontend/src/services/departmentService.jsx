@@ -53,14 +53,6 @@ export const assignUserToDepartment = async (userId, departmentId) => {
     return response.data;
 };
 
-export const updateUserPermissions = async (userId, departmentId) => {
-    try {
-        await axios.put(`${API_BASE_URL}/permissions/update-user-department-permissions/${userId}`, { departmentId });
-    } catch (err) {
-        console.error("Error updating user permissions:", err);
-        throw err;
-    }
-};
 
 
 // Cập nhật quyền của phòng ban và đồng bộ quyền user
@@ -106,5 +98,25 @@ export const getUsersByDepartmentId = async (departmentId) => {
     } catch (error) {
         console.error("Error fetching users for department:", error);
         throw error; // Ném lỗi nếu có vấn đề
+    }
+};
+
+
+// Cập nhật phòng ban và quyền cho người dùng
+export const updateUserDepartmentAndPermissions = async (userId, departmentId) => {
+    try {
+        const response = await axios.put(
+            `${API_BASE_URL}/permissions/update-user-department-permissions/${userId}`,
+            { departmentId }, // Gửi departmentId trong body request
+            {
+                headers: {
+                    "Content-Type": "application/json", // Đảm bảo gửi dữ liệu dưới dạng JSON
+                },
+            }
+        );
+        return response.data; // Trả về kết quả nhận được từ API
+    } catch (error) {
+        console.error("Error updating user department and permissions:", error);
+        throw error; // Ném lỗi để có thể xử lý ở nơi gọi API
     }
 };
