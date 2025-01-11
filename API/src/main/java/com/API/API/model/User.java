@@ -1,12 +1,13 @@
 package com.API.API.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "user")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
 
     @Id
@@ -34,21 +35,11 @@ public class User {
 
     private LocalDateTime updatedAt;
 
-    @ManyToOne(optional = true) // Cho phép giá trị null
-    @JoinColumn(name = "departmentId", nullable = true)
+    @ManyToOne
+    @JoinColumn(name = "departmentId")
     @JsonBackReference
-    private Department department;
+    private Department department; // Event type
 
-    // Getter và Setter
-    public Department getDepartment() {
-        return department;
-    }
-
-    public void setDepartment(Department department) {
-        this.department = department;
-    }
-
-    // Các hàm callback JPA
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
@@ -60,26 +51,8 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
-    // Enum Role
-    public enum Role {
-        Admin, Staff, Manager
-    }
+    // Getters and Setters
 
-    // Constructors
-    public User() {
-    }
-
-    public User(String username, String password, String fullName, String email, Role role, String avatar, Department department) {
-        this.username = username;
-        this.password = password;
-        this.fullName = fullName;
-        this.email = email;
-        this.role = role;
-        this.avatar = avatar;
-        this.department = department;
-    }
-
-    // Getter và Setter
     public Integer getUserId() {
         return userId;
     }
@@ -152,5 +125,15 @@ public class User {
         this.updatedAt = updatedAt;
     }
 
+    public Department getDepartment() {
+        return department;
+    }
 
+    public void setDepartment(Department department) {
+        this.department = department;
+    }
+
+    public enum Role {
+        Admin, Staff, Manager
+    }
 }

@@ -7,7 +7,6 @@ import {
     getPermissionsByDepartmentId,
     assignPermissionsToDepartment,
     removePermissionFromDepartment,
-    getUsersByDepartmentId // API để lấy người dùng của phòng ban
 } from "../../services/departmentService";
 import { getAllPermissions } from "../../services/authService";
 import { updateDepartmentPermissions } from "../../services/departmentService";
@@ -19,7 +18,6 @@ function DepartmentList() {
     const [allPermissions, setAllPermissions] = useState([]); // Tất cả quyền
     const [departmentPermissions, setDepartmentPermissions] = useState([]); // Quyền hiện có của phòng ban
     const [targetDepartment, setTargetDepartment] = useState(null); // Phòng ban đang thao tác
-    const [targetUsers, setTargetUsers] = useState([]); // Người dùng của phòng ban
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false); // Để quản lý trạng thái loading
@@ -120,20 +118,6 @@ function DepartmentList() {
         }
     };
 
-    const openUsersModal = async (departmentId) => {
-        setTargetDepartment(departmentId);
-        setError(""); // Reset lỗi cũ
-        setSuccessMessage(""); // Reset thông báo cũ
-
-        try {
-            const usersData = await getUsersByDepartmentId(departmentId);
-            setTargetUsers(usersData); // Cập nhật danh sách người dùng
-        } catch (err) {
-            console.error("Error fetching department users:", err);
-            setError("Unable to fetch users for the selected department.");
-        }
-    };
-
     const handleAddPermission = async (permissionId) => {
         try {
             await assignPermissionsToDepartment(targetDepartment, [permissionId]); // Gán quyền mới
@@ -170,6 +154,7 @@ function DepartmentList() {
             setIsLoading(false);
         }
     };
+
 
     return (
         <div className="container mt-4">
@@ -255,12 +240,6 @@ function DepartmentList() {
                                             Delete
                                         </button>
                                         <button
-                                            className="btn btn-info btn-sm ms-2"
-                                            onClick={() => openUsersModal(department.departmentId)}
-                                        >
-                                            Show Users
-                                        </button>
-                                        <button
                                             className="btn btn-secondary btn-sm ms-2"
                                             onClick={() => openPermissionsModal(department.departmentId)}
                                         >
@@ -274,13 +253,13 @@ function DepartmentList() {
                 </tbody>
             </table>
 
-            {/* Users Modal */}
+            {/* Permissions Modal */}
             {targetDepartment && (
                 <div className="modal show" style={{ display: "block" }} tabIndex="-1">
                     <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
-                                <h5 className="modal-title">Users in Department</h5>
+                                <h5 className="modal-title">Manage Permissions</h5>
                                 <button
                                     type="button"
                                     className="btn-close"
@@ -288,15 +267,31 @@ function DepartmentList() {
                                 ></button>
                             </div>
                             <div className="modal-body">
-                                {targetUsers.length === 0 ? (
-                                    <p>No users available in this department.</p>
+                                {allPermissions.length === 0 ? (
+                                    <p>No permissions available.</p>
                                 ) : (
-                                    targetUsers.map((user) => (
-                                        <div key={user.userId} className="d-flex align-items-center mb-2">
-                                            <span className="me-2">{user.fullName}</span>
+                                    allPermissions.map((permission) => (
+                                        <div className="d-flex align-items-center mb-2" key={permission.permissionID}>
+                                            <span className="me-2">{permission.name}</span>
+                                            {departmentPermissions.includes(permission.permissionID) ? (
+                                                <button
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={() => handleRemovePermission(permission.permissionID)}
+                                                >
+                                                    Remove
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    className="btn btn-primary btn-sm"
+                                                    onClick={() => handleAddPermission(permission.permissionID)}
+                                                >
+                                                    Add
+                                                </button>
+                                            )}
                                         </div>
                                     ))
                                 )}
+
                             </div>
 
                             <div className="modal-footer">
