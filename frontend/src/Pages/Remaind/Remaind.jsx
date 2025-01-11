@@ -12,7 +12,6 @@ function Remaind() {
         const fetchNotifications = async () => {
             try {
                 const data = await getAllNotifications();
-                console.log("API Response: ", data);
 
                 const filteredData = data.filter(
                     (notification) =>
@@ -26,11 +25,9 @@ function Remaind() {
                 setNotifications(filteredData);
                 groupNotifications(filteredData);
             } catch (err) {
-                console.error("API Error: ", err);
                 setError("Không thể tải danh sách thông báo.");
             }
         };
-
 
         fetchNotifications();
     }, []);

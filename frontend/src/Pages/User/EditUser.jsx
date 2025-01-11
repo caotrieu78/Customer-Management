@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getUserById, getAllPermissions, getPermissionsByUserId, assignPermissionToUser, removePermissionFromUser, updateUser } from "../../services/authService";
+import { getUserById, updateUser } from "../../services/authService";
+import { getAllDepartments } from "../../services/departmentService";
 
 function EditUser() {
     const { id } = useParams(); // Get user ID from URL
@@ -10,9 +11,9 @@ function EditUser() {
         fullName: "",
         email: "",
         role: "",
+        departmentId: "", // Mới thêm trường departmentId
     });
-    const [userPermissions, setUserPermissions] = useState([]); // Permissions user already has
-    const [allPermissions, setAllPermissions] = useState([]); // All available permissions
+    const [departments, setDepartments] = useState([]); // Danh sách các phòng ban
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState(""); // State for success message
 
@@ -20,49 +21,29 @@ function EditUser() {
         const fetchUserData = async () => {
             try {
                 const user = await getUserById(id); // Fetch user data by ID
-                setFormData(user);
-                const permissions = await getPermissionsByUserId(id); // Fetch user's current permissions
-                setUserPermissions(permissions.map((perm) => perm.permissionID)); // Store PermissionIDs
+                setFormData({
+                    ...user,
+                    departmentId: user.department ? user.department.departmentId : "", // Set the department if it exists
+                });
             } catch (err) {
-                console.error("Error fetching user or permissions:", err);
+                console.error("Error fetching user details:", err);
                 setError("Unable to fetch user details.");
             }
         };
 
-        const fetchAllPermissions = async () => {
+        const fetchDepartments = async () => {
             try {
-                const allPermissions = await getAllPermissions(); // Fetch all permissions
-                setAllPermissions(allPermissions);
+                const departmentsData = await getAllDepartments(); // Fetch all departments
+                setDepartments(departmentsData);
             } catch (err) {
-                console.error("Failed to fetch permissions:", err);
+                console.error("Failed to fetch departments:", err);
+                setError("Failed to load departments.");
             }
         };
 
         fetchUserData();
-        fetchAllPermissions();
+        fetchDepartments();
     }, [id]);
-
-    const handleAddPermission = async (permissionId) => {
-        try {
-            await assignPermissionToUser(id, [permissionId]); // Assign permission to user
-            setUserPermissions([...userPermissions, permissionId]); // Update local state
-            setSuccessMessage("Permission added successfully.");
-        } catch (err) {
-            console.error("Error adding permission:", err);
-            setError("Unable to add permission.");
-        }
-    };
-
-    const handleRemovePermission = async (permissionId) => {
-        try {
-            await removePermissionFromUser(id, permissionId); // Remove permission from user
-            setUserPermissions(userPermissions.filter((permId) => permId !== permissionId)); // Update local state
-            setSuccessMessage("Permission removed successfully.");
-        } catch (err) {
-            console.error("Error removing permission:", err);
-            setError("Unable to remove permission.");
-        }
-    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -146,31 +127,23 @@ function EditUser() {
                     </select>
                 </div>
 
-                {/* Permissions Section */}
+                {/* Dropdown phòng ban */}
                 <div className="mb-3">
-                    <h4>Manage Permissions</h4>
-                    {allPermissions.map((permission) => (
-                        <div className="d-flex align-items-center mb-2" key={permission.permissionID}>
-                            <span className="me-2">{permission.name}</span>
-                            {userPermissions.includes(permission.permissionID) ? (
-                                <button
-                                    type="button"
-                                    className="btn btn-danger btn-sm"
-                                    onClick={() => handleRemovePermission(permission.permissionID)}
-                                >
-                                    Remove
-                                </button>
-                            ) : (
-                                <button
-                                    type="button"
-                                    className="btn btn-primary btn-sm"
-                                    onClick={() => handleAddPermission(permission.permissionID)}
-                                >
-                                    Add
-                                </button>
-                            )}
-                        </div>
-                    ))}
+                    <label className="form-label">Department</label>
+                    <select
+                        className="form-select"
+                        name="departmentId"
+                        value={formData.departmentId}
+                        onChange={handleInputChange}
+                        required
+                    >
+                        <option value="">Select Department</option>
+                        {departments.map((department) => (
+                            <option key={department.departmentId} value={department.departmentId}>
+                                {department.departmentName}
+                            </option>
+                        ))}
+                    </select>
                 </div>
 
                 <button type="submit" className="btn btn-success">Update User</button>

@@ -3,7 +3,9 @@ package com.API.API.controller;
 import com.API.API.dto.LoginRequest;
 import com.API.API.dto.LoginResponse;
 import com.API.API.dto.UserWithDepartmentResponse;
+import com.API.API.model.Department;
 import com.API.API.model.User;
+import com.API.API.service.DepartmentService;
 import com.API.API.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,8 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+    @Autowired
+    private DepartmentService departmentService;
 
     // POST: /api/users/login
     @PostMapping("/login")
@@ -97,13 +101,15 @@ public class UserController {
 
 
     // PUT: /api/users/{id}
+    // PUT: /api/users/{id}
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Integer id,
                                            @RequestParam(value = "file", required = false) MultipartFile file,
                                            @RequestParam("username") String username,
                                            @RequestParam("fullName") String fullName,
                                            @RequestParam("email") String email,
-                                           @RequestParam("role") String role) {
+                                           @RequestParam("role") String role,
+                                           @RequestParam(value = "departmentId", required = false) Integer departmentId) {
         try {
             User updatedUser = new User();
             updatedUser.setUsername(username);
@@ -111,12 +117,24 @@ public class UserController {
             updatedUser.setEmail(email);
             updatedUser.setRole(User.Role.valueOf(role));
 
+            // Nếu có departmentId, thiết lập phòng ban cho người dùng
+            if (departmentId != null) {
+                Department department = departmentService.getDepartmentById(departmentId)
+                        .orElseThrow(() -> new RuntimeException("Department not found"));  // Sử dụng orElseThrow để ném ngoại lệ nếu không tìm thấy phòng ban
+                updatedUser.setDepartment(department);  // Gán phòng ban cho người dùng
+            }
+
+            // Cập nhật người dùng với phòng ban mới (nếu có)
             User savedUser = userService.updateUser(id, updatedUser, file);
             return ResponseEntity.ok(savedUser);
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);  // Nếu không tìm thấy phòng ban, trả về lỗi 404
         }
     }
+
+
 
 
     @DeleteMapping("/{id}")

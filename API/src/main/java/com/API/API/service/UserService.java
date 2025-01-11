@@ -165,6 +165,12 @@ public class UserService {
                     user.setEmail(updatedUser.getEmail());
                     user.setRole(updatedUser.getRole());
 
+                    // Cập nhật phòng ban nếu có
+                    if (updatedUser.getDepartment() != null) {
+                        user.setDepartment(updatedUser.getDepartment());
+                    }
+
+                    // Nếu có avatar mới, cập nhật
                     if (file != null && !file.isEmpty()) {
                         String avatarUrl = saveAvatar(file);
                         user.setAvatar(avatarUrl);
@@ -174,6 +180,8 @@ public class UserService {
                 })
                 .orElseThrow(() -> new RuntimeException("User not found"));
     }
+
+
 
     // Phương thức lấy người dùng của phòng ban
     public List<User> getUsersByDepartmentId(Integer departmentId) {
