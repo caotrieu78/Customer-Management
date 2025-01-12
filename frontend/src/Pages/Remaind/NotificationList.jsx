@@ -17,14 +17,33 @@ function NotificationList() {
     const [attachments, setAttachments] = useState([]);
     const [isModalExpanded, setIsModalExpanded] = useState(false);
     const [expandedEvents, setExpandedEvents] = useState({});
+    const [filteredNotifications, setFilteredNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     // Lấy danh sách thông báo từ backend
     useEffect(() => {
         const fetchNotifications = async () => {
             setLoading(true);
             try {
+                const user = JSON.parse(localStorage.getItem("user"));
+                if (!user || !user.userId) {
+                    throw new Error("Thông tin người dùng bị thiếu.");
+                }
+
                 const data = await getAllNotifications();
-                setNotifications(data);
+
+                // Filter notifications based on userId
+                const filteredNotifications = data.filter(
+                    (notification) => notification.eventUser.user.userId === user.userId
+                );
+
+                setNotifications(filteredNotifications);
+                setFilteredNotifications(filteredNotifications);
+
+                // Count unread notifications (assuming "Pending" status means unread)
+                const unread = filteredNotifications.filter((notification) => notification.status !== "Success").length;
+                setUnreadCount(unread);
+
             } catch (err) {
                 setError("Không thể tải danh sách thông báo.");
             } finally {
@@ -33,7 +52,9 @@ function NotificationList() {
         };
 
         fetchNotifications();
-    }, []);
+    }, []); // Chạy một lần khi component được mount
+
+
 
     // Nhóm thông báo theo sự kiện
     const groupNotificationsByEvent = (notifications) =>

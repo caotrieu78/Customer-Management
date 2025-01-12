@@ -8,6 +8,7 @@ import {
     assignPermissionsToDepartment,
     removePermissionFromDepartment,
     getUsersByDepartmentId,
+    updateDepartmentPermissions,
 } from "../../services/departmentService";
 import { getAllPermissions } from "../../services/authService";
 
@@ -154,12 +155,15 @@ function DepartmentList() {
         }
     };
 
-    // Thêm quyền
     const handleAddPermission = async (permissionId) => {
         try {
-            await assignPermissionsToDepartment(targetDepartment, [permissionId]);
-            setDepartmentPermissions([...departmentPermissions, permissionId]); // Cập nhật danh sách quyền
-            setSuccessMessage("Thêm quyền thành công.");
+            await assignPermissionsToDepartment(targetDepartment, [permissionId]); // Gán quyền mới
+            setDepartmentPermissions([...departmentPermissions, permissionId]); // Cập nhật trạng thái local
+
+            // Gọi API đồng bộ quyền của phòng ban và người dùng
+            await updateDepartmentPermissions(targetDepartment, [...departmentPermissions, permissionId]);
+
+            setSuccessMessage("Thêm quyền và đồng bộ thành công.");
         } catch (err) {
             console.error("Lỗi khi thêm quyền:", err);
             setError("Không thể thêm quyền.");
