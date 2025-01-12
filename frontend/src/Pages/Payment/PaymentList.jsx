@@ -70,6 +70,15 @@ function PaymentList() {
     const handlePaymentStatusUpdate = async (paymentId, amount) => {
         if (!selectedProject) return;
 
+        // Hiển thị thông báo xác nhận
+        const confirmPayment = window.confirm(
+            `Bạn có chắc chắn muốn đánh dấu thanh toán với số tiền ${formatCurrency(amount)} không?`
+        );
+
+        if (!confirmPayment) {
+            return; // Người dùng nhấn "Hủy bỏ"
+        }
+
         try {
             // Update payment status to "Paid"
             await updatePayment(paymentId, { paymentStatus: "Paid" });
@@ -134,7 +143,12 @@ function PaymentList() {
                 <div className="alert alert-success">{successMessage}</div>
             )}
 
-            <h2>Danh sách Dự Án</h2>
+            <h1
+                className="text-center"
+
+            >
+                Danh sách Dự Án
+            </h1>
             <div className="table-responsive">
                 <table className="table table-striped table-bordered">
                     <thead>
@@ -199,7 +213,7 @@ function PaymentList() {
                                             fetchPaymentsForProject(project.projectId);
                                         }}
                                     >
-                                        Xem Chi Tiết
+                                        <i class="bi bi-eye"></i>   Xem Chi Tiết
                                     </button>
                                 </td>
                             </tr>
@@ -245,7 +259,7 @@ function PaymentList() {
                                                         )
                                                     }
                                                 >
-                                                    Thanh Toán
+                                                    <i class="bi bi-wallet2"></i>   Thanh Toán
                                                 </button>
                                             )}
                                         </td>
@@ -258,7 +272,7 @@ function PaymentList() {
                         className="btn btn-secondary mt-3"
                         onClick={() => setSelectedProject(null)}
                     >
-                        Quay Lại
+                        <i class="bi bi-arrow-bar-left"></i> Quay Lại
                     </button>
                 </>
             )}

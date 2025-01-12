@@ -100,61 +100,116 @@ const EditProject = () => {
     };
 
     return (
-        <div className="container mt-5">
-            <h1 className="text-center mb-4 display-4">Chỉnh Sửa Dự Án</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group mb-4">
-                    <label htmlFor="projectName" className="h4">Tên Dự Án</label>
-                    <input
-                        id="projectName"
-                        type="text"
-                        value={projectName}
-                        onChange={(e) => setProjectName(e.target.value)}
-                        className="form-control form-control-lg"
-                        required
-                        placeholder="Nhập tên dự án"
-                    />
+        <div className="container">
+            <h1 className="text-center mb-4 ">Chỉnh Sửa Dự Án</h1>
+            <form onSubmit={handleSubmit} className="shadow-lg p-4 rounded bg-light">
+                <div className="row">
+                    {/* Tên Dự Án và Loại Dự Án */}
+                    <div className="col-md-6">
+                        <div className="form-group mb-4">
+                            <label htmlFor="projectName" className="h5">Tên Dự Án</label>
+                            <input
+                                id="projectName"
+                                type="text"
+                                value={projectName}
+                                onChange={(e) => setProjectName(e.target.value)}
+                                className="form-control form-control-lg"
+                                required
+                                placeholder="Nhập tên dự án"
+                            />
+                        </div>
+                    </div>
+                    <div className="col-md-6">
+                        <div className="form-group mb-5">
+                            <label className="h5">Loại Dự Án</label>
+                            <select
+                                value={projectTypeId}
+                                onChange={handleProjectTypeChange}
+                                className="form-control form-control-lg"
+                                required
+                            >
+                                <option value="">Chọn Loại Dự Án</option>
+                                {projectTypes.map((projectType) => (
+                                    <option key={projectType.projectTypeId} value={projectType.projectTypeId}>
+                                        {projectType.typeName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* Mô Tả và Khách Hàng */}
+                    <div className="col-md-6">
+                        <div className="form-group mb-4">
+                            <label htmlFor="description" className="h5">Mô Tả</label>
+                            <textarea
+                                id="description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="form-control form-control-lg"
+                                required
+                                placeholder="Nhập mô tả dự án"
+                            />
+                        </div>
+                    </div>
+                    <div className="col-md-6">
+                        <div className="form-group mb-4 mt-4 d-flex justify-content-between align-items-center">
+                            <label className="h5">Khách Hàng</label>
+                            <button
+                                type="button"
+                                onClick={toggleCustomerModal}
+                                className="btn btn-outline-primary btn-lg btn-block"
+                            >
+                                <i className="bi bi-person-check-fill"></i> {selectedCustomer ? selectedCustomer.name : 'Chọn Khách Hàng'}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Tổng Số Tiền và Người Phụ Trách */}
+                    <div className="col-md-6">
+                        <div className="form-group mb-4">
+                            <label htmlFor="totalAmount" className="h5">Tổng Số Tiền</label>
+                            <input
+                                id="totalAmount"
+                                type="number"
+                                value={totalAmount}
+                                onChange={(e) => setTotalAmount(e.target.value)}
+                                className="form-control form-control-lg"
+                                required
+                                placeholder="Nhập tổng số tiền"
+                            />
+                        </div>
+                    </div>
+                    <div className="col-md-6">
+                        <div className="form-group mb-4 mt-4 d-flex justify-content-between align-items-center">
+                            <label className="h5">Người Phụ Trách</label>
+                            <button
+                                type="button"
+                                onClick={toggleUserModal}
+                                className="btn btn-outline-primary btn-lg btn-block"
+                            >
+                                <i className="bi bi-person-badge"></i> {selectedUser ? selectedUser.username : 'Chọn Người Phụ Trách'}
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
-                <div className="form-group mb-4">
-                    <label htmlFor="description" className="h4">Mô Tả</label>
-                    <textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="form-control form-control-lg"
-                        required
-                        placeholder="Nhập mô tả dự án"
-                    />
-                </div>
-
-                <div className="form-group mb-4">
-                    <label htmlFor="totalAmount" className="h4">Tổng Số Tiền</label>
-                    <input
-                        id="totalAmount"
-                        type="number"
-                        value={totalAmount}
-                        onChange={(e) => setTotalAmount(e.target.value)}
-                        className="form-control form-control-lg"
-                        required
-                        placeholder="Nhập tổng số tiền"
-                    />
-                </div>
-
-                {/* Customer Button */}
-                <div className="form-group mb-4">
-                    <label className="h4 ">Khách Hàng</label>
-                    <button type="button" onClick={toggleCustomerModal} className="btn btn-outline-primary btn-lg btn-block ms-4">
-                        {selectedCustomer ? `${selectedCustomer.name}` : 'Chọn Khách Hàng'}
+                {/* Nút cập nhật */}
+                <div className="text-center mt-4">
+                    <button type="submit" className="btn btn-primary btn-lg px-5">
+                        <i className="bi bi-save"></i> Cập Nhật Dự Án
                     </button>
                 </div>
 
-                {/* Modal for selecting customer */}
+                {/* Hiển thị thông báo */}
+                {message && <p className="text-center mt-3 alert alert-info">{message}</p>}
+
+                {/* Popup Modal: Chọn Khách Hàng */}
                 {showCustomerModal && (
                     <div className="modal show" style={{ display: 'block' }}>
                         <div className="modal-dialog">
                             <div className="modal-content">
-                                <div className="modal-header">
+                                <div className="modal-header d-flex justify-content-between align-items-center">
                                     <h5 className="modal-title">Chọn Khách Hàng</h5>
                                     <button type="button" className="close" onClick={toggleCustomerModal}>
                                         <span>&times;</span>
@@ -199,37 +254,12 @@ const EditProject = () => {
                     </div>
                 )}
 
-                {/* Display selected customer info
-                {selectedCustomer && (
-                    <div className="customer-selection-info mt-3">
-                        <h5 className="h4">Thông Tin Khách Hàng</h5>
-                        <h5><strong>Tên:</strong> {selectedCustomer.name}</h5>
-                        <h5><strong>Email:</strong> {selectedCustomer.email}</h5>
-                        <h5><strong>Số điện thoại:</strong> {selectedCustomer.phone}</h5>
-                        <button
-                            type="button"
-                            onClick={() => setSelectedCustomer(null)}
-                            className="btn btn-outline-primary btn-lg"
-                        >
-                            Chọn Lại Khách Hàng
-                        </button>
-                    </div>
-                )} */}
-
-                {/* User Button */}
-                <div className="form-group mb-4 mt-4">
-                    <label className="h4">Người Phụ Trách</label>
-                    <button type="button" onClick={toggleUserModal} className="btn btn-outline-primary btn-lg btn-block ms-4">
-                        {selectedUser ? `${selectedUser.username}` : 'Chọn Người Phụ Trách'}
-                    </button>
-                </div>
-
-                {/* Modal for selecting user */}
+                {/* Popup Modal: Chọn Người Phụ Trách */}
                 {showUserModal && (
                     <div className="modal show" style={{ display: 'block' }}>
                         <div className="modal-dialog">
                             <div className="modal-content">
-                                <div className="modal-header">
+                                <div className="modal-header d-flex justify-content-between align-items-center">
                                     <h5 className="modal-title">Chọn Người Phụ Trách</h5>
                                     <button type="button" className="close" onClick={toggleUserModal}>
                                         <span>&times;</span>
@@ -273,46 +303,10 @@ const EditProject = () => {
                         </div>
                     </div>
                 )}
-
-                {/* Display selected user info
-                {selectedUser && (
-                    <div className="user-selection-info mt-3">
-                        <h5 className="h4">Thông Tin Người Phụ Trách</h5>
-                        <h5><strong>Tên:</strong> {selectedUser.username}</h5>
-                        <h5><strong>Vai trò:</strong> {selectedUser.role}</h5>
-                        <button
-                            type="button"
-                            onClick={() => setSelectedUser(null)}
-                            className="btn btn-outline-primary btn-lg"
-                        >
-                            Chọn Lại Người Phụ Trách
-                        </button>
-                    </div>
-                )} */}
-
-                <div className="form-group mb-4">
-                    <label className="h4">Loại Dự Án</label>
-                    <select
-                        value={projectTypeId}
-                        onChange={handleProjectTypeChange}
-                        className="form-control form-control-lg"
-                        required
-                    >
-                        <option value="">Chọn Loại Dự Án</option>
-                        {projectTypes.map((projectType) => (
-                            <option key={projectType.projectTypeId} value={projectType.projectTypeId}>
-                                {projectType.typeName}
-                            </option>
-                        ))}
-                    </select>
-                </div>
-
-                <div className="form-group mb-4">
-                    <button type="submit" className="btn btn-primary btn-lg btn-block">Cập Nhật Dự Án</button>
-                </div>
             </form>
 
-            {message && <p className="text-center mt-3">{message}</p>}
+
+
         </div>
     );
 };

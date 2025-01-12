@@ -13,21 +13,20 @@ function Event() {
     const [events, setEvents] = useState([]);
     const [eventTypes, setEventTypes] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [loading, setLoading] = useState(false); // State for loading
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [eventToDelete, setEventToDelete] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingEventId, setEditingEventId] = useState(null);
+    const [statusFilter, setStatusFilter] = useState(""); // Event status filter
 
-    // Add/Edit form state
     const [formData, setFormData] = useState({
         eventTypeId: "",
         description: "",
         eventDate: "",
     });
 
-    // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
     const eventsPerPage = 5;
 
@@ -58,11 +57,29 @@ function Event() {
         }));
     };
 
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    // Apply status filter here
+    const filteredEvents = events
+        .filter((event) => {
+            return (
+                event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                event.eventType?.eventTypeName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                event.eventDate.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        })
+        .filter((event) => {
+            if (!statusFilter) return true; // If no filter is selected, show all
+            return event.status === statusFilter;
+        });
+
     const handleAddEvent = async (e) => {
         e.preventDefault();
         if (!formData.eventTypeId || !formData.eventDate || !formData.description) {
             setError("Vui lòng điền đầy đủ thông tin.");
-            setTimeout(() => setError(""), 2000); // Clear error after 2 seconds
+            setTimeout(() => setError(""), 2000);
             return;
         }
 
@@ -75,7 +92,6 @@ function Event() {
         setLoading(true);
         try {
             if (editingEventId) {
-                // Update existing event
                 const updatedEvent = await updateEvent(editingEventId, eventPayload);
                 setEvents((prevEvents) =>
                     prevEvents.map((event) =>
@@ -84,7 +100,6 @@ function Event() {
                 );
                 setSuccessMessage("Sự kiện đã được cập nhật thành công!");
             } else {
-                // Add new event
                 const newEvent = await createEvent(eventPayload);
                 const eventType = eventTypes.find(
                     (type) => type.eventTypeId === parseInt(formData.eventTypeId)
@@ -97,16 +112,14 @@ function Event() {
             setFormData({ eventTypeId: "", description: "", eventDate: "" });
             setEditingEventId(null);
 
-            // Automatically clear success message after 2 seconds
             setTimeout(() => setSuccessMessage(""), 2000);
         } catch (err) {
             setError("Không thể thêm hoặc cập nhật sự kiện. Vui lòng thử lại.");
-            setTimeout(() => setError(""), 2000); // Clear error after 2 seconds
+            setTimeout(() => setError(""), 2000);
         } finally {
             setLoading(false);
         }
     };
-
 
     const handleEdit = (event) => {
         setEditingEventId(event.eventId);
@@ -117,6 +130,7 @@ function Event() {
         });
         setShowAddModal(true);
     };
+
     const confirmDelete = (eventId) => {
         setEventToDelete(eventId);
     };
@@ -129,24 +143,18 @@ function Event() {
             setEventToDelete(null);
             setTimeout(() => setSuccessMessage(""), 2000);
         } catch (err) {
-            console.error("Error deleting event:", err);
             setError("Không thể xóa sự kiện. Vui lòng thử lại.");
         }
     };
 
-
-    // Phân Quyền
     const user = JSON.parse(localStorage.getItem("user"));
-    const isAuthorized = user?.role === "Admin" || user?.role === "Manager"; // Allow Admin and Manager
-
-
-
+    const isAuthorized = user?.role === "Admin" || user?.role === "Manager";
 
     const indexOfLastEvent = currentPage * eventsPerPage;
     const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-    const currentEvents = events.slice(indexOfFirstEvent, indexOfLastEvent);
+    const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
 
-    const totalPages = Math.ceil(events.length / eventsPerPage);
+    const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
     const handleNextPage = () => {
         if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
@@ -158,33 +166,84 @@ function Event() {
 
     return (
         <div className="container">
+
+            <h1 className="text-center mb-3">
+                quản lý sự kiện
+            </h1>
             {loading && <div className="spinner-border text-primary" role="status"></div>}
             {successMessage && (
                 <div className="alert alert-success">{successMessage}</div>
             )}
             {error && <div className="alert alert-danger">{error}</div>}
+            <div className="row g-4">
+                {/* Search and Filter Section */}
+                <div className="col-md-8">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-secondary text-white">
+                            <h6 className="mb-0">Tìm Kiếm Sự Kiện</h6>
+                        </div>
+                        <div className="card-body">
+                            <div className="row g-3">
+                                {/* Search Input */}
+                                <div className="col-8">
+                                    <input
+                                        type="text"
+                                        className="form-control"
+                                        placeholder="Tìm kiếm sự kiện"
+                                        value={searchTerm}
+                                        onChange={handleSearchChange}
+                                    />
+                                </div>
+                                {/* Status Filter */}
+                                <div className="col-4">
+                                    <select
+                                        id="statusFilter"
+                                        className="form-select"
+                                        value={statusFilter}
+                                        onChange={(e) => setStatusFilter(e.target.value)}
+                                    >
+                                        <option value="">Tất cả</option>
+                                        <option value="PLANNED">Lên kế hoạch</option>
+                                        <option value="COMPLETED">Hoàn thành</option>
+                                        <option value="CANCELED">Hủy bỏ</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1>Danh sách Sự kiện</h1>
-                <div className="d-flex">
-                    <NavLink
-                        to={`${PATHS.EVENT_TYPES}`}
-                        className="btn btn-primary btn-sm me-2"
-                    >
-                        Thêm Loại Sự kiện
-                    </NavLink>
-                    <button
-                        className="btn btn-primary"
-                        onClick={() => {
-                            setShowAddModal(true);
-                            setEditingEventId(null);
-                            setFormData({ eventTypeId: "", description: "", eventDate: "" });
-                        }}
-                    >
-                        Thêm Sự kiện
-                    </button>
+                {/* Action Buttons Section */}
+                <div className="col-md-4">
+                    <div className="card shadow-sm">
+                        <div className="card-header bg-primary text-white">
+                            <h6 className="mb-0">Hành Động</h6>
+                        </div>
+                        <div className="card-body">
+                            <div className="d-flex flex-column gap-2">
+                                <NavLink
+                                    to={`${PATHS.EVENT_TYPES}`}
+                                    className="btn btn-primary "
+                                >
+                                    <i class="bi bi-eye"></i>  Xem Loại Sự Kiện
+                                </NavLink>
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={() => {
+                                        setShowAddModal(true);
+                                        setEditingEventId(null);
+                                        setFormData({ eventTypeId: "", description: "", eventDate: "" });
+                                    }}
+                                >
+                                    <i class="bi bi-plus-square"></i> Thêm Sự Kiện
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+
+
 
 
             <div className="table-responsive">
@@ -212,7 +271,7 @@ function Event() {
                                         className="btn btn-warning btn-sm me-2"
                                         onClick={() => handleEdit(event)}
                                     >
-                                        Sửa
+                                        <i class="bi bi-pencil-square"></i>  Sửa
                                     </button>
                                     {isAuthorized && (
                                         <>
@@ -220,18 +279,17 @@ function Event() {
                                                 className="btn btn-danger btn-sm me-2"
                                                 onClick={() => confirmDelete(event.eventId)}
                                             >
-                                                Xóa
+                                                <i class="bi bi-trash3"></i>  Xóa
                                             </button>
 
                                             <NavLink
                                                 to={`${PATHS.EVENT_DETAIL}/${event.eventId}`}
                                                 className="btn btn-primary btn-sm me-2"
                                             >
-                                                Phân Công Người Phụ Trách
+                                                <i class="bi bi-pen"></i> Phân Công Người Phụ Trách
                                             </NavLink>
                                         </>
                                     )}
-
                                 </td>
                             </tr>
                         ))}
@@ -334,6 +392,7 @@ function Event() {
                     </div>
                 </div>
             )}
+
             {eventToDelete && (
                 <div
                     className="modal fade show"

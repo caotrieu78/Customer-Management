@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import { PATHS } from "../../constant/pathnames";
-import {
-    getAllCustomers,
-    deleteCustomer
-} from "../../services/customerServices";
+import { getAllCustomers, deleteCustomer } from "../../services/customerServices";
 
 function Customer() {
     const [customers, setCustomers] = useState([]);
     const [filteredCustomers, setFilteredCustomers] = useState([]);
-    const [searchTerm, setSearchTerm] = useState("");
     const [classificationFilter, setClassificationFilter] = useState("");
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
@@ -22,6 +18,22 @@ function Customer() {
     // Sort states
     const [sortColumn, setSortColumn] = useState(""); // Currently sorted column
     const [sortOrder, setSortOrder] = useState("asc"); // Ascending or descending
+
+    // Search by column
+    const [columnSearch, setColumnSearch] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        address: "",
+    });
+
+    // Toggle search visibility
+    const [visibleSearch, setVisibleSearch] = useState({
+        name: false,
+        email: false,
+        phone: false,
+        address: false,
+    });
 
     // Fetch all customers
     useEffect(() => {
@@ -51,20 +63,26 @@ function Customer() {
             );
         }
 
-        // Filter by search term
-        if (searchTerm) {
-            tempCustomers = tempCustomers.filter(
-                (customer) =>
-                    customer.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    customer.email.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
+        // Filter by column search
+        tempCustomers = tempCustomers.filter(
+            (customer) =>
+                customer.name.toLowerCase().includes(columnSearch.name.toLowerCase()) &&
+                customer.email.toLowerCase().includes(columnSearch.email.toLowerCase()) &&
+                customer.phone.toLowerCase().includes(columnSearch.phone.toLowerCase()) &&
+                customer.address.toLowerCase().includes(columnSearch.address.toLowerCase())
+        );
 
         // Sort customers
         if (sortColumn) {
             tempCustomers.sort((a, b) => {
-                const aValue = a[sortColumn] || "";
-                const bValue = b[sortColumn] || "";
+                const aValue =
+                    sortColumn === "classificationName"
+                        ? a.classification?.classificationName || ""
+                        : a[sortColumn] || "";
+                const bValue =
+                    sortColumn === "classificationName"
+                        ? b.classification?.classificationName || ""
+                        : b[sortColumn] || "";
                 if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
                 if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
                 return 0;
@@ -73,7 +91,7 @@ function Customer() {
 
         setFilteredCustomers(tempCustomers);
         setCurrentPage(1); // Reset to the first page after filtering/sorting
-    }, [searchTerm, classificationFilter, customers, sortColumn, sortOrder]);
+    }, [classificationFilter, columnSearch, customers, sortColumn, sortOrder]);
 
     // Handle delete customer
     const confirmDelete = (customerId) => {
@@ -123,9 +141,13 @@ function Customer() {
         if (currentPage > 1) setCurrentPage((prev) => prev - 1);
     };
 
-    // Get user role from localStorage (e.g., "Admin", "Staff")
-    const user = JSON.parse(localStorage.getItem("user"));
-    const userRole = user?.role; // Assuming the user object contains the role
+    // Toggle search visibility for each column
+    const toggleSearch = (column) => {
+        setVisibleSearch((prev) => ({
+            ...prev,
+            [column]: !prev[column],
+        }));
+    };
 
     if (error) {
         return <div className="alert alert-danger">{error}</div>;
@@ -145,77 +167,129 @@ function Customer() {
             {successMessage && (
                 <div className="alert alert-success">{successMessage}</div>
             )}
+            <h1
+                className="text-center"
 
+            >
+                Danh sách Khách Hàng
+            </h1>
             {/* Add Customer Button */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1
-                    className="text-center"
-                    style={{
-                        color: "#0056b3",
-                        fontWeight: "bold",
-                        textTransform: "uppercase"
-                    }}
-                >
-                    <i className="bi bi-person-lines-fill me-2"></i>Danh sách Khách Hàng
-                </h1>
+
 
                 <NavLink to={PATHS.ADD_CUSTOMER} className="btn btn-primary">
-                    Thêm khách hàng
+                    <i class="bi bi-person-plus"></i> Thêm khách hàng
                 </NavLink>
             </div>
-
-            {/* Search and Filter */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                {/* Search */}
-                <input
-                    type="text"
-                    className="form-control w-50 me-3"
-                    placeholder="Tìm kiếm theo tên hoặc email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                {/* Filter */}
-                <select
-                    className="form-select w-25"
-                    value={classificationFilter}
-                    onChange={(e) => setClassificationFilter(e.target.value)}
-                >
-                    <option value="">Tất cả phân loại</option>
-                    <option value="VIP">VIP</option>
-                    <option value="Normal">Normal</option>
-                    <option value="Potential">Potential</option>
-                </select>
-            </div>
-
             {/* Customer Table */}
             <div className="table-responsive">
                 <table className="table table-striped table-bordered">
                     <thead className="table-dark">
                         <tr>
-                            <th onClick={() => handleSort("customerId")}>
-                                ID{" "}
-                                {sortColumn === "customerId" &&
-                                    (sortOrder === "asc" ? "↑" : "↓")}
+                            <th>ID</th>
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Tên
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("name")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.name && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm Tên"
+                                        value={columnSearch.name}
+                                        onChange={(e) =>
+                                            setColumnSearch({
+                                                ...columnSearch,
+                                                name: e.target.value,
+                                            })
+                                        }
+                                    />
+                                )}
                             </th>
-                            <th onClick={() => handleSort("name")}>
-                                Tên {sortColumn === "name" && (sortOrder === "asc" ? "↑" : "↓")}
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Email
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("email")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.email && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm Email"
+                                        value={columnSearch.email}
+                                        onChange={(e) =>
+                                            setColumnSearch({
+                                                ...columnSearch,
+                                                email: e.target.value,
+                                            })
+                                        }
+                                    />
+                                )}
                             </th>
-                            <th onClick={() => handleSort("email")}>
-                                Email{" "}
-                                {sortColumn === "email" && (sortOrder === "asc" ? "↑" : "↓")}
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Điện thoại
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("phone")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.phone && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm Điện thoại"
+                                        value={columnSearch.phone}
+                                        onChange={(e) =>
+                                            setColumnSearch({
+                                                ...columnSearch,
+                                                phone: e.target.value,
+                                            })
+                                        }
+                                    />
+                                )}
                             </th>
-                            <th onClick={() => handleSort("phone")}>
-                                Điện thoại{" "}
-                                {sortColumn === "phone" && (sortOrder === "asc" ? "↑" : "↓")}
-                            </th>
-                            <th onClick={() => handleSort("address")}>
-                                Địa chỉ{" "}
-                                {sortColumn === "address" && (sortOrder === "asc" ? "↑" : "↓")}
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Địa chỉ
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("address")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.address && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm Địa chỉ"
+                                        value={columnSearch.address}
+                                        onChange={(e) =>
+                                            setColumnSearch({
+                                                ...columnSearch,
+                                                address: e.target.value,
+                                            })
+                                        }
+                                    />
+                                )}
                             </th>
                             <th onClick={() => handleSort("classificationName")}>
-                                Phân loại{" "}
-                                {sortColumn === "classificationName" &&
-                                    (sortOrder === "asc" ? "↑" : "↓")}
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Phân loại
+                                    {sortColumn === "classificationName" && (
+                                        <span>{sortOrder === "asc" ? " ↑" : " ↓"}</span>
+                                    )}
+                                </div>
                             </th>
                             <th>Actions</th>
                         </tr>
@@ -229,22 +303,20 @@ function Customer() {
                                 <td>{customer.email}</td>
                                 <td>{customer.phone}</td>
                                 <td>{customer.address}</td>
-                                <td>{customer.classification?.classificationName}</td>
+                                <td>{customer.classification?.classificationName || "N/A"}</td>
                                 <td>
                                     <NavLink
                                         to={`${PATHS.EDIT_CUSTOMER}/${customer.customerId}`}
                                         className="btn btn-warning btn-sm me-2"
                                     >
-                                        Sửa
+                                        <i class="bi bi-pencil-square"></i> Sửa
                                     </NavLink>
-                                    {userRole === "Admin" && (
-                                        <button
-                                            className="btn btn-danger btn-sm"
-                                            onClick={() => confirmDelete(customer.customerId)}
-                                        >
-                                            Xóa
-                                        </button>
-                                    )}
+                                    <button
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => confirmDelete(customer.customerId)}
+                                    >
+                                        <i class="bi bi-trash3"></i> Xóa
+                                    </button>
                                 </td>
                             </tr>
                         ))}

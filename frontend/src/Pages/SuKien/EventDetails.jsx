@@ -13,9 +13,11 @@ function EventDetails() {
     const [event, setEvent] = useState(null);
     const [users, setUsers] = useState([]);
     const [customers, setCustomers] = useState([]);
+    const [filteredCustomers, setFilteredCustomers] = useState([]); // For customer search
     const [selectedCustomers, setSelectedCustomers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchText, setSearchText] = useState("");
+    const [customerSearchText, setCustomerSearchText] = useState(""); // Search state for customers
     const [selectedUser, setSelectedUser] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [showUserPopup, setShowUserPopup] = useState(false);
@@ -47,6 +49,7 @@ function EventDetails() {
                 setUsers(allUsers.filter((user) => user.role !== "Admin"));
                 setFilteredUsers(allUsers.filter((user) => user.role !== "Admin"));
                 setCustomers(filteredCustomers);
+                setFilteredCustomers(filteredCustomers); // Initialize filtered customers
             } catch (err) {
                 console.error("Error fetching data:", err);
             } finally {
@@ -97,6 +100,15 @@ function EventDetails() {
         }
     };
 
+    const handleCustomerSearch = (text) => {
+        setCustomerSearchText(text);
+        setFilteredCustomers(
+            customers.filter((customer) =>
+                customer.name.toLowerCase().includes(text.toLowerCase())
+            )
+        );
+    };
+
     const handleSearch = (text) => {
         setSearchText(text);
         setFilteredUsers(
@@ -115,15 +127,11 @@ function EventDetails() {
     if (isLoading) return <div className="text-center my-5">Đang tải...</div>;
 
     return (
-        <div className="container mt-5">
+        <div className="container ">
             {/* Header Section */}
             <div
                 className="text-center p-4 mb-4 rounded shadow"
-                style={{
-                    background: "linear-gradient(135deg, #3b82f6, #60a5fa)",
-                    color: "#fff",
-                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)"
-                }}
+
             >
                 <h1 style={{ fontWeight: "bold", fontSize: "2.5rem" }}>
                     Thông Tin Về Sự Kiện
@@ -177,7 +185,7 @@ function EventDetails() {
                 className="btn btn-primary mt-3"
                 onClick={() => setShowModal(true)}
             >
-                Gán Người Phụ Trách và Khách Hàng
+                <i className="bi bi-people-fill"></i> Gán Người Phụ Trách và Khách Hàng
             </button>
 
             {/* Main Modal */}
@@ -199,7 +207,7 @@ function EventDetails() {
                         <div className="modal-content">
                             <div className="modal-header bg-primary text-white">
                                 <h5 className="modal-title">
-                                    Gán Người Phụ Trách và Khách Hàng
+                                    <i className="bi bi-people-fill"></i> Gán Người Phụ Trách và Khách Hàng
                                 </h5>
                                 <button
                                     className="btn-close"
@@ -207,9 +215,19 @@ function EventDetails() {
                                 ></button>
                             </div>
                             <div className="modal-body">
-                                <h5 className="text-primary">Danh Sách Khách Hàng</h5>
+                                <h5 className="text-primary mb-3">Danh Sách Khách Hàng</h5>
+
+                                {/* Customer Search */}
+                                <input
+                                    type="text"
+                                    className="form-control mb-3"
+                                    placeholder="Tìm kiếm khách hàng..."
+                                    value={customerSearchText}
+                                    onChange={(e) => handleCustomerSearch(e.target.value)}
+                                />
+
                                 <ul className="list-group mb-3">
-                                    {customers.map((customer) => (
+                                    {filteredCustomers.map((customer) => (
                                         <li
                                             key={customer.customerId}
                                             className="list-group-item d-flex justify-content-between align-items-center"
@@ -229,11 +247,12 @@ function EventDetails() {
                                         </li>
                                     ))}
                                 </ul>
+
                                 <button
                                     className="btn btn-secondary mb-3"
                                     onClick={() => setShowUserPopup(true)}
                                 >
-                                    Chọn Người Phụ Trách
+                                    <i className="bi bi-person-check"></i> Chọn Người Phụ Trách
                                 </button>
                                 {selectedUser && (
                                     <div className="alert alert-info">
@@ -246,13 +265,13 @@ function EventDetails() {
                                     className="btn btn-danger"
                                     onClick={() => setShowModal(false)}
                                 >
-                                    Đóng
+                                    <i className="bi bi-x-lg"></i> Đóng
                                 </button>
                                 <button
                                     className="btn btn-success"
                                     onClick={handleAssignUserAndCustomer}
                                 >
-                                    Xác Nhận
+                                    <i className="bi bi-check-circle"></i> Xác Nhận
                                 </button>
                             </div>
                         </div>
@@ -260,7 +279,6 @@ function EventDetails() {
                 </div>
             )}
 
-            {/* User Selection Popup */}
             {/* User Selection Popup */}
             {showUserPopup && (
                 <div
@@ -317,7 +335,7 @@ function EventDetails() {
                         <div className="text-end mt-3">
                             <button
                                 className="btn btn-secondary"
-                                onClick={() => setShowUserPopup(false)} // Thoát popup
+                                onClick={() => setShowUserPopup(false)}
                             >
                                 Quay Lại
                             </button>

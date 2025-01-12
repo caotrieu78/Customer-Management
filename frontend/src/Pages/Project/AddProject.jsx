@@ -45,13 +45,11 @@ const AddProject = () => {
     }, []);
 
     const formatCurrency = (value) => {
-        // Chuyển đổi thành số
         let num = value.replace(/\./g, '').replace(',', '.');
         if (isNaN(num)) return value;
-
-        // Format số tiền theo dấu chấm ngăn cách hàng nghìn
         return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     };
+
     const filteredCustomers = customers.filter(customer =>
         customer.name.toLowerCase().includes(searchCustomer.toLowerCase()) ||
         customer.email.toLowerCase().includes(searchCustomer.toLowerCase()) ||
@@ -63,9 +61,10 @@ const AddProject = () => {
         user.fullName.toLowerCase().includes(searchUser.toLowerCase()) ||
         user.role.toLowerCase().includes(searchUser.toLowerCase())
     );
+
     const handleTotalAmountChange = (e) => {
         const formattedValue = formatCurrency(e.target.value);
-        setTotalAmount(formattedValue);  // Cập nhật giá trị vào state
+        setTotalAmount(formattedValue);
     };
 
     const handleSubmit = async (e) => {
@@ -75,7 +74,7 @@ const AddProject = () => {
             projectName,
             description,
             status: 'Ongoing',
-            totalAmount: parseFloat(totalAmount.replace(/\./g, '')),  // Chuyển về số sau khi format
+            totalAmount: parseFloat(totalAmount.replace(/\./g, '')),
             paidAmount: 0,
             customer: { customerId: parseInt(customerId) },
             user: { userId: parseInt(userId) },
@@ -85,7 +84,7 @@ const AddProject = () => {
         try {
             const response = await createProject(newProject);
             setMessage('Project created successfully!');
-            navigate(PATHS.PROJECT);  // Navigate to the project list page
+            navigate(PATHS.PROJECT);
         } catch (error) {
             setMessage('Error creating project: ' + error.message);
         }
@@ -116,200 +115,219 @@ const AddProject = () => {
     };
 
     return (
-        <div className="container mt-5">
-            <h1 className="text-center mb-4 display-4">Tạo Dự Án Mới</h1>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group mb-4">
-                    <label htmlFor="projectName" className="h4">Tên Dự Án</label>
-                    <input
-                        id="projectName"
-                        type="text"
-                        value={projectName}
-                        onChange={(e) => setProjectName(e.target.value)}
-                        className="form-control form-control-lg"
-                        required
-                        placeholder="Nhập tên dự án"
-                    />
-                </div>
+        <div className="container">
+            <h1 className="text-center mb-3">Tạo Dự Án Mới</h1>
+            <form onSubmit={handleSubmit} className="shadow-lg p-4 rounded bg-light">
+                <div className="row">
+                    {/* Left Column */}
+                    <div className="col-md-6">
+                        <div className="form-group mb-4">
+                            <label htmlFor="projectName" className="h5">Tên Dự Án</label>
+                            <input
+                                id="projectName"
+                                type="text"
+                                value={projectName}
+                                onChange={(e) => setProjectName(e.target.value)}
+                                className="form-control form-control-lg"
+                                required
+                                placeholder="Nhập tên dự án"
+                            />
+                        </div>
 
-                <div className="form-group mb-4">
-                    <label htmlFor="description" className="h4">Mô Tả</label>
-                    <textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        className="form-control form-control-lg"
-                        required
-                        placeholder="Nhập mô tả dự án"
-                    />
-                </div>
+                        <div className="form-group mb-4">
+                            <label htmlFor="description" className="h5">Mô Tả</label>
+                            <textarea
+                                id="description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
+                                className="form-control form-control-lg"
+                                required
+                                placeholder="Nhập mô tả dự án"
+                            />
+                        </div>
 
-                <div className="form-group mb-4">
-                    <label htmlFor="totalAmount" className="h4">Tổng Số Tiền</label>
-                    <input
-                        id="totalAmount"
-                        type="text"
-                        value={totalAmount}
-                        onChange={handleTotalAmountChange}
-                        className="form-control form-control-lg"
-                        required
-                        placeholder="Nhập tổng số tiền"
-                    />
-                </div>
-
-                {/* Customer Button */}
-                <div className="form-group mb-4">
-                    <label className="h4 ">Khách Hàng</label>
-                    <button type="button" onClick={toggleCustomerModal} className="btn btn-outline-primary btn-lg btn-block ms-4">
-                        {selectedCustomer ? `${selectedCustomer.name}` : 'Chọn Khách Hàng'}
-                    </button>
-                </div>
-
-                {/* Modal for selecting customer */}
-                {showCustomerModal && (
-                    <div className="modal show" style={{ display: 'block' }}>
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Chọn Khách Hàng</h5>
-                                    <button type="button" className="close" onClick={toggleCustomerModal}>
-                                        <span>&times;</span>
-                                    </button>
-                                </div>
-                                <div className="modal-body">
-                                    <input
-                                        type="text"
-                                        className="form-control mb-3"
-                                        placeholder="Tìm kiếm khách hàng"
-                                        value={searchCustomer}
-                                        onChange={(e) => setSearchCustomer(e.target.value)}
-                                    />
-                                    <table className="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Tên</th>
-                                                <th>Email</th>
-                                                <th>Số điện thoại</th>
-                                                <th>Hành động</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {filteredCustomers.map((customer) => (
-                                                <tr key={customer.customerId}>
-                                                    <td>{customer.name}</td>
-                                                    <td>{customer.email}</td>
-                                                    <td>{customer.phone}</td>
-                                                    <td>
-                                                        <button
-                                                            className="btn btn-success"
-                                                            onClick={() => handleCustomerSelect(customer)}
-                                                        >
-                                                            Chọn
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className="modal-footer">
-                                    <button type="button" className="btn btn-secondary" onClick={toggleCustomerModal}>
-                                        Đóng
-                                    </button>
-                                </div>
-                            </div>
+                        <div className="form-group mb-4">
+                            <label htmlFor="totalAmount" className="h5">Tổng Số Tiền</label>
+                            <input
+                                id="totalAmount"
+                                type="text"
+                                value={totalAmount}
+                                onChange={handleTotalAmountChange}
+                                className="form-control form-control-lg"
+                                required
+                                placeholder="Nhập tổng số tiền"
+                            />
                         </div>
                     </div>
-                )}
 
-                {/* User Button */}
-                <div className="form-group mb-4 mt-4">
-                    <label className="h4">Người Phụ Trách</label>
-                    <button type="button" onClick={toggleUserModal} className="btn btn-outline-primary btn-lg btn-block ms-4">
-                        {selectedUser ? `${selectedUser.username}` : 'Chọn Người Phụ Trách'}
-                    </button>
-                </div>
 
-                {/* Modal for selecting user */}
-                {showUserModal && (
-                    <div className="modal show" style={{ display: 'block' }}>
-                        <div className="modal-dialog">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <h5 className="modal-title">Chọn Người Phụ Trách</h5>
-                                    <button type="button" className="close" onClick={toggleUserModal}>
-                                        <span>&times;</span>
-                                    </button>
-                                </div>
-                                <div className="modal-body">
-                                    <input
-                                        type="text"
-                                        className="form-control mb-3"
-                                        placeholder="Tìm kiếm người phụ trách"
-                                        value={searchUser}
-                                        onChange={(e) => setSearchUser(e.target.value)}
-                                    />
-                                    <table className="table">
-                                        <thead>
-                                            <tr>
-                                                <th>Tên người dùng</th>
-                                                <th>Họ tên</th>
-                                                <th>Vai trò</th>
-                                                <th>Hành động</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {filteredUsers.map((user) => (
-                                                <tr key={user.userId}>
-                                                    <td>{user.username}</td>
-                                                    <td>{user.fullName}</td>
-                                                    <td>{user.role}</td>
-                                                    <td>
-                                                        <button
-                                                            className="btn btn-success"
-                                                            onClick={() => handleUserSelect(user)}
-                                                        >
-                                                            Chọn
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <div className="modal-footer">
-                                    <button type="button" className="btn btn-secondary" onClick={toggleUserModal}>
-                                        Đóng
-                                    </button>
+                    {/* Right Column */}
+                    <div className="col-md-6">
+                        <div className="form-group mb-5">
+                            <label className="h5">Loại Dự Án</label>
+                            <select
+                                value={projectTypeId}
+                                onChange={handleProjectTypeChange}
+                                className="form-control form-control-lg"
+                                required
+                            >
+                                <option value="">Chọn Loại Dự Án</option>
+                                {projectTypes.map((projectType) => (
+                                    <option key={projectType.projectTypeId} value={projectType.projectTypeId}>
+                                        {projectType.typeName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        {/* Customer Button */}
+                        <div className="form-group mb-4 mt-4 d-flex justify-content-between align-items-center">
+                            <label className="h5">Khách Hàng</label>
+
+                            <button type="button" onClick={toggleCustomerModal} className="btn btn-outline-primary btn-lg btn-block ms-4">
+                                <i class="bi bi-person-check-fill"></i>  {selectedCustomer ? `${selectedCustomer.name}` : 'Chọn Khách Hàng'}
+                            </button>
+                        </div>
+
+                        {/* Modal for selecting customer */}
+                        {showCustomerModal && (
+                            <div className="modal show" style={{ display: 'block' }}>
+                                <div className="modal-dialog">
+                                    <div className="modal-content">
+                                        <div className="modal-header d-flex justify-content-between align-items-center">
+                                            <h5 className="modal-title mb-0">Chọn Khách Hàng</h5>
+                                            <button type="button" className="close" onClick={toggleCustomerModal}>
+                                                <span>&times;</span>
+                                            </button>
+                                        </div>
+
+                                        <div className="modal-body">
+                                            <input
+                                                type="text"
+                                                className="form-control mb-3"
+                                                placeholder="Tìm kiếm khách hàng"
+                                                value={searchCustomer}
+                                                onChange={(e) => setSearchCustomer(e.target.value)}
+                                            />
+                                            <table className="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Tên</th>
+                                                        <th>Email</th>
+                                                        <th>Số điện thoại</th>
+                                                        <th>Hành động</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {filteredCustomers.map((customer) => (
+                                                        <tr key={customer.customerId}>
+                                                            <td>{customer.name}</td>
+                                                            <td>{customer.email}</td>
+                                                            <td>{customer.phone}</td>
+                                                            <td>
+                                                                <button
+                                                                    className="btn btn-success"
+                                                                    onClick={() => handleCustomerSelect(customer)}
+                                                                >
+                                                                    Chọn
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="modal-footer">
+                                            <button type="button" className="btn btn-secondary" onClick={toggleCustomerModal}>
+                                                Đóng
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )}
+                        )}
 
-                <div className="form-group mb-4">
-                    <label className="h4">Loại Dự Án</label>
-                    <select
-                        value={projectTypeId}
-                        onChange={handleProjectTypeChange}
-                        className="form-control form-control-lg"
-                        required
-                    >
-                        <option value="">Chọn Loại Dự Án</option>
-                        {projectTypes.map((projectType) => (
-                            <option key={projectType.projectTypeId} value={projectType.projectTypeId}>
-                                {projectType.typeName}
-                            </option>
-                        ))}
-                    </select>
+                        {/* User Button */}
+                        <div className="form-group mb-4 mt-4 d-flex justify-content-between align-items-center">
+                            <label className="h5 mb-0">Người Phụ Trách</label>
+                            <button type="button" onClick={toggleUserModal} className="btn btn-outline-primary btn-lg ms-3">
+                                <i class="bi bi-person-badge"></i>    {selectedUser ? `${selectedUser.username}` : 'Chọn Người Phụ Trách'}
+                            </button>
+                        </div>
+
+
+                        {/* Modal for selecting user */}
+                        {showUserModal && (
+                            <div className="modal show" style={{ display: 'block' }}>
+                                <div className="modal-dialog">
+                                    <div className="modal-content">
+                                        <div className="modal-header d-flex justify-content-between align-items-center">
+                                            <h5 className="modal-title">Chọn Người Phụ Trách </h5>
+                                            <button type="button" className="close" onClick={toggleUserModal}>
+                                                <span>&times;</span>
+                                            </button>
+                                        </div>
+                                        <div className="modal-body">
+                                            <input
+                                                type="text"
+                                                className="form-control mb-3"
+                                                placeholder="Tìm kiếm người phụ trách"
+                                                value={searchUser}
+                                                onChange={(e) => setSearchUser(e.target.value)}
+                                            />
+                                            <table className="table table-striped">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Tên người dùng</th>
+                                                        <th>Họ tên</th>
+                                                        <th>Vai trò</th>
+                                                        <th>Hành động</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {filteredUsers.map((user) => (
+                                                        <tr key={user.userId}>
+                                                            <td>{user.username}</td>
+                                                            <td>{user.fullName}</td>
+                                                            <td>{user.role}</td>
+                                                            <td>
+                                                                <button
+                                                                    className="btn btn-success"
+                                                                    onClick={() => handleUserSelect(user)}
+                                                                >
+                                                                    Chọn
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <div className="modal-footer">
+                                            <button type="button" className="btn btn-secondary" onClick={toggleUserModal}>
+                                                Đóng
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+
+                    </div>
                 </div>
 
-                <div className="form-group mb-4">
-                    <button type="submit" className="btn btn-primary btn-lg btn-block">Tạo Dự Án</button>
+                <div className="text-center mt-4">
+                    <button type="submit" className="btn btn-primary btn-lg px-5">
+                        <i class="bi bi-plus-square"></i>  Tạo Dự Án
+                    </button>
                 </div>
             </form>
 
-            {message && <p className="text-center mt-3">{message}</p>}
+            {message && (
+                <div className="alert alert-info text-center mt-4">
+                    {message}
+                </div>
+            )}
         </div>
     );
 };

@@ -4,7 +4,6 @@ import { createPayment } from "../../services/paymentService";
 import { useNavigate } from "react-router-dom";
 import { getAllProjects } from "../../services/projectServices";
 
-
 function AddPayment() {
     const [projects, setProjects] = useState([]);
     const [selectedProject, setSelectedProject] = useState(null);
@@ -31,7 +30,9 @@ function AddPayment() {
 
     // Handle project selection
     const handleProjectChange = (projectId) => {
-        const project = projects.find((proj) => proj.projectId === parseInt(projectId));
+        const project = projects.find(
+            (proj) => proj.projectId === parseInt(projectId)
+        );
         setSelectedProject(project);
         setInstallments(1); // Reset installments
         setInstallmentPercentage([]); // Reset percentages
@@ -61,7 +62,7 @@ function AddPayment() {
             installmentNumber: index + 1,
             amount: (selectedProject.totalAmount * percentage) / 100,
             paymentDate: new Date().toISOString().split("T")[0], // Current date
-            paymentStatus: "Đang Thanh Toán",
+            paymentStatus: "Đang Thanh Toán"
         }));
 
         try {
@@ -82,14 +83,23 @@ function AddPayment() {
 
     return (
         <div className="container">
-            <h1>Thêm Thanh Toán</h1>
+            <h1
+                className="text-center"
 
-            {successMessage && <div className="alert alert-success">{successMessage}</div>}
+            >
+                Thêm Thanh Toán
+            </h1>
+
+            {successMessage && (
+                <div className="alert alert-success">{successMessage}</div>
+            )}
 
             <form onSubmit={handleSubmit}>
                 {/* Select Project */}
                 <div className="mb-3">
-                    <label htmlFor="project" className="form-label">Dự Án</label>
+                    <label htmlFor="project" className="form-label">
+                        Dự Án
+                    </label>
                     <select
                         id="project"
                         className="form-select"
@@ -108,7 +118,9 @@ function AddPayment() {
                 {selectedProject && (
                     <>
                         <div className="mb-3">
-                            <label htmlFor="installments" className="form-label">Số đợt</label>
+                            <label htmlFor="installments" className="form-label">
+                                Số đợt
+                            </label>
                             <input
                                 id="installments"
                                 type="number"
@@ -145,7 +157,9 @@ function AddPayment() {
                 )}
 
                 {/* Submit Button */}
-                <button type="submit" className="btn btn-primary">Tạo Thanh Toán</button>
+                <button type="submit" className="btn btn-primary">
+                    Tạo Thanh Toán
+                </button>
             </form>
         </div>
     );

@@ -1,14 +1,37 @@
 import React, { useEffect, useState } from "react";
-import { getSummaryReport, getCustomerReport, getProjectReport } from "../../services/ThonKeService";
+import {
+    getSummaryReport,
+    getCustomerReport,
+    getProjectReport
+} from "../../services/ThonKeService";
 import { Bar } from "react-chartjs-2";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+} from "chart.js";
 import * as XLSX from "xlsx";
 
 // Register chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(
+    CategoryScale,
+    LinearScale,
+    BarElement,
+    Title,
+    Tooltip,
+    Legend
+);
 
 const ThongKe = () => {
-    const [summary, setSummary] = useState({ revenueByMonth: [], revenueByYear: [], revenueByProjectType: [] });
+    const [summary, setSummary] = useState({
+        revenueByMonth: [],
+        revenueByYear: [],
+        revenueByProjectType: []
+    });
     const [customers, setCustomers] = useState([]);
     const [projects, setProjects] = useState([]);
     const [error, setError] = useState(null);
@@ -24,7 +47,9 @@ const ThongKe = () => {
                 setSummary(summaryData);
 
                 // Sort customers by totalPaid in descending order
-                const sortedCustomers = customerData.sort((a, b) => (b.totalPaid || 0) - (a.totalPaid || 0));
+                const sortedCustomers = customerData.sort(
+                    (a, b) => (b.totalPaid || 0) - (a.totalPaid || 0)
+                );
                 setCustomers(sortedCustomers);
 
                 setProjects(projectData);
@@ -36,13 +61,15 @@ const ThongKe = () => {
         fetchReports();
     }, []);
 
-    // Chart data and options
-    const chartData = {
-        labels: ["Tổng doanh thu tháng 11", "Tổng doanh thu tháng 12", "Tổng doanh thu tháng 1", "Tổng doanh thu tháng 2", "Tổng doanh thu tháng 3"],
+    // Chart data and options for revenue by month
+    const chartDataSummary = {
+        labels: summary.revenueByMonth.map(
+            (item) => `Tháng ${item.month}/${item.year}`
+        ),
         datasets: [
             {
                 label: "Doanh thu theo tháng",
-                data: summary.revenueByMonth.map(item => item.totalRevenue),
+                data: summary.revenueByMonth.map((item) => item.totalRevenue),
                 backgroundColor: "rgba(75, 192, 192, 0.2)",
                 borderColor: "rgba(75, 192, 192, 1)",
                 borderWidth: 1
@@ -50,7 +77,7 @@ const ThongKe = () => {
         ]
     };
 
-    const chartOptions = {
+    const chartOptionsSummary = {
         responsive: true,
         plugins: {
             title: {
@@ -69,40 +96,112 @@ const ThongKe = () => {
         }
     };
 
+    // Chart data for customer report
+    const chartDataCustomers = {
+        labels: customers.map((customer) => customer.customerName),
+        datasets: [
+            {
+                label: "Tổng Tiền Thanh Toán",
+                data: customers.map((customer) => customer.totalPaid || 0),
+                backgroundColor: "rgba(54, 162, 235, 0.2)",
+                borderColor: "rgba(54, 162, 235, 1)",
+                borderWidth: 1
+            }
+        ]
+    };
+
+    const chartOptionsCustomers = {
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: "Biểu đồ khách hàng theo tổng tiền thanh toán"
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    };
+
+    // Chart data for project report
+    const chartDataProjects = {
+        labels: projects.map((project) => project.typeName),
+        datasets: [
+            {
+                label: "Tổng Doanh Thu",
+                data: projects.map((project) => project.totalRevenue),
+                backgroundColor: "rgba(255, 99, 132, 0.2)",
+                borderColor: "rgba(255, 99, 132, 1)",
+                borderWidth: 1
+            }
+        ]
+    };
+
+    const chartOptionsProjects = {
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: "Biểu đồ dự án theo tổng doanh thu"
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    };
+
     // Export to Excel
+    // Function to export data to Excel
     const exportToExcel = () => {
         const wb = XLSX.utils.book_new();
 
-        // Summary Data
-        const summarySheet = XLSX.utils.json_to_sheet(summary.revenueByMonth.map(item => ({
-            Tháng: `Tháng ${item.month}/${item.year}`,
-            DoanhThu: item.totalRevenue.toLocaleString()
-        })));
+        // 1. Sheet: Doanh thu theo tháng
+        const summarySheet = XLSX.utils.json_to_sheet(
+            summary.revenueByMonth.map((item, index) => ({
+                STT: index + 1,
+                "Tháng/Năm": `Tháng ${item.month}/${item.year}`,
+                "Tổng Doanh Thu (VND)": item.totalRevenue.toLocaleString()
+            }))
+        );
         XLSX.utils.book_append_sheet(wb, summarySheet, "Doanh thu theo tháng");
 
-        // Customer Data
-        const customerSheet = XLSX.utils.json_to_sheet(customers.map(customer => ({
-            TênKhachHang: customer.customerName,
-            Email: customer.customerEmail,
-            TongTienThanhToan: customer.totalPaid ? customer.totalPaid.toLocaleString() : "Chưa có",
-            SoDuAnThamGia: customer.projectCount
-        })));
+        // 2. Sheet: Chi tiết khách hàng
+        const customerSheet = XLSX.utils.json_to_sheet(
+            customers.map((customer, index) => ({
+                STT: index + 1,
+                "Tên Khách Hàng": customer.customerName,
+                Email: customer.customerEmail,
+                "Tổng Tiền Thanh Toán (VND)": customer.totalPaid
+                    ? customer.totalPaid.toLocaleString()
+                    : "Chưa thanh toán",
+                "Số Dự Án Tham Gia": customer.projectCount
+            }))
+        );
         XLSX.utils.book_append_sheet(wb, customerSheet, "Khách hàng");
 
-        // Project Data
-        const projectSheet = XLSX.utils.json_to_sheet(projects.map(project => ({
-            LoaiDuAn: project.typeName,
-            TongDoanhThu: project.totalRevenue.toLocaleString()
-        })));
+        // 3. Sheet: Chi tiết dự án
+        const projectSheet = XLSX.utils.json_to_sheet(
+            projects.map((project, index) => ({
+                STT: index + 1,
+                "Tên Loại Dự Án": project.typeName,
+                "Tổng Doanh Thu (VND)": project.totalRevenue.toLocaleString()
+            }))
+        );
         XLSX.utils.book_append_sheet(wb, projectSheet, "Dự án");
 
-        // Write the Excel file
-        XLSX.writeFile(wb, "ThongKe_BaoCao.xlsx");
+        // Xuất file Excel
+        XLSX.writeFile(wb, "BaoCaoThongKe.xlsx");
     };
 
     return (
         <div className="container my-5">
-            <h1 className="text-center mb-4">Thống Kê Báo Cáo</h1>
+            <h1 className="text-primary text-center mb-4">
+                <i class="bi bi-graph-up-arrow"></i>Thống Kê Báo Cáo
+            </h1>
 
             {/* Error Handling */}
             {error && <div className="alert alert-danger">{error}</div>}
@@ -147,102 +246,21 @@ const ThongKe = () => {
                 {/* Summary Report */}
                 {activeTab === "summary" && (
                     <div className="tab-pane fade show active">
-                        <div className="card mb-4">
-                            <div className="card-header">
-                                <h5>Báo Cáo Tổng Quan</h5>
-                            </div>
-                            <div className="card-body">
-                                <p><strong>Doanh thu theo tháng:</strong></p>
-                                {summary.revenueByMonth.map((item, index) => (
-                                    <p key={index}>
-                                        Tháng {item.month}/{item.year}: {item.totalRevenue.toLocaleString()} VND
-                                    </p>
-                                ))}
-                            </div>
-                        </div>
-                        {/* Bar Chart */}
-                        <div className="card mb-4">
-                            <div className="card-header">
-                                <h5>Báo Cáo Biểu Đồ Cột</h5>
-                            </div>
-                            <div className="card-body">
-                                <Bar data={chartData} options={chartOptions} />
-                            </div>
-                        </div>
+                        <Bar data={chartDataSummary} options={chartOptionsSummary} />
                     </div>
                 )}
 
                 {/* Customer Report */}
                 {activeTab === "customers" && (
                     <div className="tab-pane fade show active">
-                        <div className="card mb-4">
-                            <div className="card-header">
-                                <h5>Báo Cáo Khách Hàng</h5>
-                            </div>
-                            <div className="card-body">
-                                {customers.length === 0 ? (
-                                    <p className="text-muted">Không có dữ liệu khách hàng</p>
-                                ) : (
-                                    <div className="table-responsive">
-                                        <table className="table table-striped table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>Tên Khách Hàng</th>
-                                                    <th>Email</th>
-                                                    <th>Tổng Tiền Thanh Toán</th>
-                                                    <th>Số Dự Án Tham Gia</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {customers.map((customer, index) => (
-                                                    <tr key={index}>
-                                                        <td>{customer.customerName}</td>
-                                                        <td>{customer.customerEmail}</td>
-                                                        <td>{customer.totalPaid ? customer.totalPaid.toLocaleString() : "Chưa có"}</td>
-                                                        <td>{customer.projectCount}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <Bar data={chartDataCustomers} options={chartOptionsCustomers} />
                     </div>
                 )}
 
                 {/* Project Report */}
                 {activeTab === "projects" && (
                     <div className="tab-pane fade show active">
-                        <div className="card mb-4">
-                            <div className="card-header">
-                                <h5>Báo Cáo Dự Án</h5>
-                            </div>
-                            <div className="card-body">
-                                {projects.length === 0 ? (
-                                    <p className="text-muted">Không có dữ liệu dự án</p>
-                                ) : (
-                                    <div className="table-responsive">
-                                        <table className="table table-striped table-bordered">
-                                            <thead>
-                                                <tr>
-                                                    <th>Loại Dự Án</th>
-                                                    <th>Tổng Doanh Thu</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {projects.map((project, index) => (
-                                                    <tr key={index}>
-                                                        <td>{project.typeName}</td>
-                                                        <td>{project.totalRevenue.toLocaleString()} VND</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
+                        <Bar data={chartDataProjects} options={chartOptionsProjects} />
                     </div>
                 )}
             </div>

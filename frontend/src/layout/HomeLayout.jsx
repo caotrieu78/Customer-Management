@@ -13,7 +13,11 @@ const HomeLayout = () => {
 
     return (
         <div className="container-fluid h-100">
+
             <div className="row h-100">
+
+
+
                 {/* Sidebar */}
                 <div
                     className={`sidebar-wrapper ${isSidebarCollapsed ? "col-auto" : "col-md-3 col-lg-2"} bg-dark text-white p-0`}
@@ -25,6 +29,7 @@ const HomeLayout = () => {
                 {/* Main content area */}
                 <div
                     className={`main-content-wrapper ${isSidebarCollapsed ? "col" : "col-md-9 col-lg-10"} p-0 d-flex flex-column`}
+                    style={{ minHeight: "100vh" }} // Ensure full height
                 >
                     <Header toggleSidebar={toggleSidebar} />
 
@@ -39,6 +44,5 @@ const HomeLayout = () => {
         </div>
     );
 };
-
 
 export default HomeLayout;

@@ -7,11 +7,6 @@ body {
 }
 
 
-.nav-link {
-    transition: background-color 0.4s ease, color 0.4s ease;
-    /* Smooth transition for both applying and removing */
-}
-
 
 .nav-link.active {
     background-color: #007bff !important;
@@ -52,4 +47,43 @@ body {
     color: #0056b3;
     font-weight: bold;
     text-transform: uppercase;
+}
+
+.nav-link {
+    transition: background-color 0.4s ease, color 0.4s ease;
+    /* Smooth transition for both applying and removing */
+}
+
+nav {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+
+/* When the screen is small (mobile screens), set to 2 columns */
+@media (max-width: 768px) {
+    .nav {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .nav-item {
+        display: flex;
+        align-items: center;
+    }
+
+    /* Reduce font size and padding for mobile screens */
+    .nav-link {
+        font-size: 0.85rem;
+        /* Smaller text size */
+        padding: 5px 10px;
+        /* Reduced padding to save space */
+    }
+
+    /* Optionally, reduce the icon size */
+    .nav-link i {
+        font-size: 1.1rem;
+        /* Smaller icon size */
+    }
 }

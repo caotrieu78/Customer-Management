@@ -16,6 +16,9 @@ function ProjectType() {
     const [showDeleteModal, setShowDeleteModal] = useState(false); // Hiển thị modal xóa
     const [newTypeName, setNewTypeName] = useState(""); // Giá trị tên loại dự án mới
 
+    // Thanh tìm kiếm
+    const [searchTerm, setSearchTerm] = useState(""); // Từ khóa tìm kiếm
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const projectTypesPerPage = 10; // Number of project types per page
@@ -35,12 +38,17 @@ function ProjectType() {
         fetchProjectTypes();
     }, []);
 
+    // Lọc danh sách loại dự án theo từ khóa tìm kiếm
+    const filteredProjectTypes = projectTypes.filter((type) =>
+        type.typeName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     // Handle pagination logic
     const indexOfLastProjectType = currentPage * projectTypesPerPage;
     const indexOfFirstProjectType = indexOfLastProjectType - projectTypesPerPage;
-    const currentProjectTypes = projectTypes.slice(indexOfFirstProjectType, indexOfLastProjectType);
+    const currentProjectTypes = filteredProjectTypes.slice(indexOfFirstProjectType, indexOfLastProjectType);
 
-    const totalPages = Math.ceil(projectTypes.length / projectTypesPerPage);
+    const totalPages = Math.ceil(filteredProjectTypes.length / projectTypesPerPage);
 
     const handleNextPage = () => {
         if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
@@ -104,32 +112,40 @@ function ProjectType() {
     };
 
     return (
-        <div className="container mt-5">
-
-
+        <div className="container ">
             {/* Error Message */}
             {error && <div className="alert alert-danger">{error}</div>}
 
-            <div className="d-flex justify-content-between">
-                <h1 className="mb-4">Danh sách loại dự án</h1>
-                <div className="d-flex  mb-4">
-                    <div className="gap-2 me-3">
-                        <NavLink to={`${PATHS.PROJECT}`} className="btn btn-primary">
-                            Quay Về Trang Quản Lý Dự Án
-                        </NavLink>
-                    </div>
-                    <div className="gap-2 me-3">
-                        <button
-                            className="btn btn-primary "
-                            onClick={() => handleShowAddEditModal()}
-                        >
-                            Thêm Loại
-                        </button>
-                    </div>
+            <h1
+                className="text-center mb-3"
+
+            >
+                QUẢN LÝ LOẠI DỰ ÁN
+            </h1>
+
+            <div className="d-flex justify-content-between align-items-center mb-4">
+
+                <input
+                    type="text"
+                    className="form-control w-50"
+                    placeholder="Tìm kiếm loại dự án..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <div className="d-flex justify-content-between align-items-center mb-3 ">
+
+                    <button
+                        className="btn btn-primary me-3"
+                        onClick={() => handleShowAddEditModal()}
+                    >
+                        <i className="bi bi-plus-square"></i> Thêm Loại
+                    </button>
+                    <NavLink to={`${PATHS.PROJECT}`} className="btn btn-primary">
+                        Quay Về Trang Quản Lý Dự Án <i class="bi bi-arrow-bar-right"></i>
+                    </NavLink>
                 </div>
+
             </div>
-
-
 
             {/* Project Types Table */}
             <div className="table-responsive">
@@ -148,12 +164,11 @@ function ProjectType() {
                                     <td>{type.projectTypeId}</td>
                                     <td>{type.typeName}</td>
                                     <td>
-
                                         <button
                                             className="btn btn-warning btn-sm me-2"
                                             onClick={() => handleShowAddEditModal(type)}
                                         >
-                                            Sửa
+                                            <i className="bi bi-pencil-square"></i> Sửa
                                         </button>
                                         <button
                                             className="btn btn-danger btn-sm"
@@ -162,7 +177,7 @@ function ProjectType() {
                                                 setShowDeleteModal(true);
                                             }}
                                         >
-                                            Xóa
+                                            <i className="bi bi-trash3"></i> Xóa
                                         </button>
                                     </td>
                                 </tr>
@@ -170,7 +185,7 @@ function ProjectType() {
                         ) : (
                             <tr>
                                 <td colSpan="3" className="text-center">
-                                    Không có loại dự án nào
+                                    Không tìm thấy loại dự án nào
                                 </td>
                             </tr>
                         )}
@@ -229,10 +244,10 @@ function ProjectType() {
                             </div>
                             <div className="modal-footer">
                                 <button className="btn btn-secondary" onClick={handleCloseAddEditModal}>
-                                    Hủy
+                                    <i className="bi bi-x-square"></i> Hủy
                                 </button>
                                 <button className="btn btn-primary" onClick={handleSaveType}>
-                                    Lưu
+                                    <i className="bi bi-floppy"></i> Lưu
                                 </button>
                             </div>
                         </div>
@@ -264,10 +279,10 @@ function ProjectType() {
                             </div>
                             <div className="modal-footer">
                                 <button className="btn btn-secondary" onClick={() => setShowDeleteModal(false)}>
-                                    Hủy
+                                    <i className="bi bi-x-square"></i> Hủy
                                 </button>
                                 <button className="btn btn-danger" onClick={handleDeleteType}>
-                                    Xóa
+                                    <i className="bi bi-trash3"></i> Xóa
                                 </button>
                             </div>
                         </div>

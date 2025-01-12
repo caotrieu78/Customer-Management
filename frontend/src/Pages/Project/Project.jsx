@@ -5,20 +5,34 @@ import { PATHS } from "../../constant/pathnames";
 
 function Project() {
     const [projects, setProjects] = useState([]);
-    const [projectTypes, setProjectTypes] = useState([]); // State for project types
+    const [projectTypes, setProjectTypes] = useState([]);
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [projectToDelete, setProjectToDelete] = useState(null);
-    const [projectDetails, setProjectDetails] = useState(null); // Project details being viewed
+    const [projectDetails, setProjectDetails] = useState(null);
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const projectsPerPage = 10; // Number of projects per page
+    const projectsPerPage = 10;
 
     // Filters and Search
     const [statusFilter, setStatusFilter] = useState("");
     const [typeFilter, setTypeFilter] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
+    const [columnSearch, setColumnSearch] = useState({
+        projectName: "",
+        customerName: "",
+        managerName: "",
+        typeName: "",
+        status: "",
+    });
+    const [visibleSearch, setVisibleSearch] = useState({
+        projectName: false,
+        customerName: false,
+        managerName: false,
+        typeName: false,
+        status: false,
+    });
 
     // Fetch projects and project types when the component mounts
     useEffect(() => {
@@ -29,7 +43,7 @@ function Project() {
                     getAllProjectTypes(),
                 ]);
                 setProjects(projectData);
-                setProjectTypes(projectTypeData); // Populate project types
+                setProjectTypes(projectTypeData);
             } catch (err) {
                 console.error("Error fetching data:", err);
                 setError("Không thể tải dữ liệu.");
@@ -65,35 +79,43 @@ function Project() {
         setProjectDetails(project);
     };
 
-    // Format currency with dot separator
-    const formatCurrency = (value) => {
-        let num = value.toString().replace(/\./g, '').replace(',', '.');
-        if (isNaN(num)) return value;
-        return num.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    // Toggle visibility of search fields
+    const toggleSearch = (column) => {
+        setVisibleSearch((prev) => ({
+            ...prev,
+            [column]: !prev[column],
+        }));
     };
 
     // Filtered and searched projects
-    const filteredProjects = projects
-        .filter((project) => {
-            if (statusFilter && project.status !== statusFilter) return false;
-            if (typeFilter && project.projectType?.typeName !== typeFilter) return false;
-            if (searchTerm && !project.projectName.toLowerCase().includes(searchTerm.toLowerCase()))
-                return false;
-            return true;
-        });
+    const filteredProjects = projects.filter((project) => {
+        if (statusFilter && project.status !== statusFilter) return false;
+        if (typeFilter && project.projectType?.typeName !== typeFilter) return false;
+        if (searchTerm && !project.projectName.toLowerCase().includes(searchTerm.toLowerCase()))
+            return false;
 
+        // Column-specific filtering
+        if (columnSearch.projectName && !project.projectName.toLowerCase().includes(columnSearch.projectName.toLowerCase()))
+            return false;
+        if (columnSearch.customerName && !(project.customer?.name || "").toLowerCase().includes(columnSearch.customerName.toLowerCase()))
+            return false;
+        if (columnSearch.managerName && !(project.user?.fullName || "").toLowerCase().includes(columnSearch.managerName.toLowerCase()))
+            return false;
+        if (columnSearch.typeName && !(project.projectType?.typeName || "").toLowerCase().includes(columnSearch.typeName.toLowerCase()))
+            return false;
+        if (columnSearch.status && !project.status.toLowerCase().includes(columnSearch.status.toLowerCase()))
+            return false;
 
-    // Phân Quyền
-    const user = JSON.parse(localStorage.getItem("user"));
-    const isAuthorized = user?.role === "Admin" || user?.role === "Manager"; // Allow Admin and Manager
-
-
-
+        return true;
+    });
 
     // Pagination logic
     const indexOfLastProject = currentPage * projectsPerPage;
     const indexOfFirstProject = indexOfLastProject - projectsPerPage;
-    const currentProjects = filteredProjects.slice(indexOfFirstProject, indexOfLastProject);
+    const currentProjects = filteredProjects.slice(
+        indexOfFirstProject,
+        indexOfLastProject
+    );
 
     const totalPages = Math.ceil(filteredProjects.length / projectsPerPage);
 
@@ -109,11 +131,14 @@ function Project() {
         setStatusFilter("");
         setTypeFilter("");
         setSearchTerm("");
+        setColumnSearch({
+            projectName: "",
+            customerName: "",
+            managerName: "",
+            typeName: "",
+            status: "",
+        });
     };
-
-    if (error) {
-        return <div className="alert alert-danger">{error}</div>;
-    }
 
     return (
         <div className="container">
@@ -121,54 +146,58 @@ function Project() {
             {successMessage && <div className="alert alert-success">{successMessage}</div>}
 
             {/* Add Project and View Project Types Buttons */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1>Danh sách dự án</h1>
-                <div className="d-flex gap-2">
-                    <NavLink to={PATHS.ADD_PROJECT} className="btn btn-primary">
-                        Thêm dự án
-                    </NavLink>
-                    <NavLink to={PATHS.PROJECT_TYPES} className="btn btn-secondary">
-                        Xem danh sách loại dự án
-                    </NavLink>
+            <h1 className="text-center mb-3">
+                quản lý DỰ ÁN
+            </h1>
+
+            {/* Filters and Search */}
+            <div className="card shadow-sm mb-4 p-3">
+                <div className="d-flex flex-wrap gap-3 align-items-center justify-content-between">
+                    {/* Bộ lọc trạng thái */}
+                    <div className="flex-grow-1">
+                        <label className="form-label fw-bold">Trạng thái</label>
+                        <select
+                            className="form-select"
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                        >
+                            <option value="">Tất cả trạng thái</option>
+                            <option value="Ongoing">Đang Tiến Hành</option>
+                            <option value="Completed">Đã Hoàn Thành</option>
+                            <option value="Accepted_NotPaid">Đã chấp nhận nhưng chưa thanh toán</option>
+                            <option value="Canceled">Dự Án Hủy Bỏ</option>
+                        </select>
+                    </div>
+
+                    {/* Bộ lọc loại dự án */}
+                    <div className="flex-grow-1">
+                        <label className="form-label fw-bold">Loại dự án</label>
+                        <select
+                            className="form-select"
+                            value={typeFilter}
+                            onChange={(e) => setTypeFilter(e.target.value)}
+                        >
+                            <option value="">Tất cả loại dự án</option>
+                            {projectTypes.map((type) => (
+                                <option key={type.typeId} value={type.typeName}>
+                                    {type.typeName}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Các nút hành động */}
+                    <div className="d-flex flex-column gap-2">
+                        <NavLink to={PATHS.ADD_PROJECT} className="btn btn-primary">
+                            <i className="bi bi-plus-lg"></i> Thêm dự án
+                        </NavLink>
+                        <NavLink to={PATHS.PROJECT_TYPES} className="btn btn-secondary">
+                            <i className="bi bi-list"></i> Xem loại dự án
+                        </NavLink>
+                    </div>
                 </div>
             </div>
 
-            {/* Filters and Search */}
-            <div className="d-flex gap-3 align-items-center mb-4">
-                <select
-                    className="form-select"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                >
-                    <option value="">Tất cả trạng thái</option>
-                    <option value="Ongoing">Đang Tiến Hành</option>
-                    <option value="Completed">Đã Hoàn Thành</option>
-                    <option value="Accepted_NotPaid">Đã chấp nhận nhưng chưa thanh toán</option>
-                    <option value="Canceled">Dự Án Hủy Bỏ</option>
-                </select>
-
-                <select
-                    className="form-select"
-                    value={typeFilter}
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                >
-                    <option value="">Tất cả loại dự án</option>
-                    {projectTypes.map((type) => (
-                        <option key={type.typeId} value={type.typeName}>
-                            {type.typeName}
-                        </option>
-                    ))}
-                </select>
-
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Tìm kiếm tên dự án..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-
-            </div>
 
             {/* Project Table */}
             <div className="table-responsive">
@@ -176,11 +205,91 @@ function Project() {
                     <thead className="table-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Tên dự án</th>
-                            <th>Khách hàng</th>
-                            <th>Người quản lý</th>
-                            <th>Loại dự án</th>
-                            <th>Trạng thái</th>
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Tên dự án
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("projectName")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.projectName && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm tên dự án"
+                                        value={columnSearch.projectName}
+                                        onChange={(e) =>
+                                            setColumnSearch({ ...columnSearch, projectName: e.target.value })
+                                        }
+                                    />
+                                )}
+                            </th>
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Khách hàng
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("customerName")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.customerName && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm khách hàng"
+                                        value={columnSearch.customerName}
+                                        onChange={(e) =>
+                                            setColumnSearch({ ...columnSearch, customerName: e.target.value })
+                                        }
+                                    />
+                                )}
+                            </th>
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Người quản lý
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("managerName")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.managerName && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm người quản lý"
+                                        value={columnSearch.managerName}
+                                        onChange={(e) =>
+                                            setColumnSearch({ ...columnSearch, managerName: e.target.value })
+                                        }
+                                    />
+                                )}
+                            </th>
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Loại dự án
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("typeName")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.typeName && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm loại dự án"
+                                        value={columnSearch.typeName}
+                                        onChange={(e) =>
+                                            setColumnSearch({ ...columnSearch, typeName: e.target.value })
+                                        }
+                                    />
+                                )}
+                            </th>
+                            <th>Trạng thái </th>
                             <th>Ngày bắt đầu</th>
                             <th>Ngày kết thúc</th>
                             <th>Actions</th>
@@ -221,36 +330,20 @@ function Project() {
                                         className="btn btn-info btn-sm me-2"
                                         onClick={() => viewProjectDetails(project)}
                                     >
-                                        Xem
+                                        <i class="bi bi-eye"></i> Xem
                                     </button>
-                                    {isAuthorized && (
-                                        <>
-                                            {/* Render Edit button only if the project is not completed */}
-                                            {project.status !== "Completed" ? (
-                                                <NavLink
-                                                    to={`${PATHS.EDIT_PROJECT}/${project.projectId}`}
-                                                    className="btn btn-warning btn-sm me-2"
-                                                >
-                                                    Sửa
-                                                </NavLink>
-                                            ) : (
-                                                <button className="btn btn-warning btn-sm me-2" disabled>
-                                                    Sửa
-                                                </button>
-                                            )}
-
-                                            {/* Disable Delete button if the project is completed */}
-                                            <button
-                                                className="btn btn-danger btn-sm"
-                                                onClick={() => confirmDelete(project.projectId)}
-                                                disabled={project.status === "Completed"} // Disable if the status is 'Completed'
-                                            >
-                                                Xóa
-                                            </button>
-                                        </>
-                                    )}
-
-
+                                    <NavLink
+                                        to={`${PATHS.EDIT_PROJECT}/${project.projectId}`}
+                                        className="btn btn-warning btn-sm me-2"
+                                    >
+                                        <i class="bi bi-pencil-square"></i> Sửa
+                                    </NavLink>
+                                    <button
+                                        className="btn btn-danger btn-sm"
+                                        onClick={() => confirmDelete(project.projectId)}
+                                    >
+                                        <i class="bi bi-trash"></i> Xóa
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -267,7 +360,9 @@ function Project() {
                 >
                     Previous
                 </button>
-                <span>Page {currentPage} of {totalPages}</span>
+                <span>
+                    Page {currentPage} of {totalPages}
+                </span>
                 <button
                     className="btn btn-secondary btn-sm"
                     onClick={handleNextPage}
@@ -346,10 +441,10 @@ function Project() {
                                 <p><strong>Trạng thái:</strong> {projectDetails.status}</p>
                                 <p><strong>Ngày bắt đầu:</strong> {projectDetails.startDate}</p>
                                 <p><strong>Ngày kết thúc:</strong> {projectDetails.endDate || "Chưa có ngày kết thúc"}</p>
-                                <p><strong>Số tiền tổng:</strong> {formatCurrency(projectDetails.totalAmount)}</p>
-                                <p><strong>Số tiền đã trả:</strong> {formatCurrency(projectDetails.paidAmount)}</p>
-                                <p><strong>Số tiền còn lại:</strong> {formatCurrency(projectDetails.remainingAmount)}</p>
-                                <p><strong>Người quản lý:</strong> {projectDetails.user.fullName || "Không có"}({projectDetails.user.role || "Không có"})   </p>
+                                <p><strong>Số tiền tổng:</strong> {projectDetails.totalAmount}</p>
+                                <p><strong>Số tiền đã trả:</strong> {projectDetails.paidAmount}</p>
+                                <p><strong>Số tiền còn lại:</strong> {projectDetails.remainingAmount}</p>
+                                <p><strong>Người quản lý:</strong> {projectDetails.user.fullName || "Không có"} ({projectDetails.user.role || "Không có"})</p>
                                 <p><strong>Khách hàng:</strong> {projectDetails.customer.name || "Không có"}</p>
                                 <p><strong>Loại dự án:</strong> {projectDetails.projectType.typeName}</p>
                             </div>

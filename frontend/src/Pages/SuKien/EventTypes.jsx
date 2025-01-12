@@ -81,8 +81,13 @@ function EventTypes() {
 
     return (
         <div>
+
+            <h1 className="text-center mb-3">
+                quản lý LOẠi sự kiện
+            </h1>
+
             <button className="btn btn-primary mb-3" onClick={() => setShowCreateModal(true)}>
-                Tạo Sự Kiện
+                <i class="bi bi-plus-square"></i>  Tạo Sự Kiện
             </button>
 
             <div className="table-responsive">
@@ -102,7 +107,7 @@ function EventTypes() {
                                         className="btn btn-warning btn-sm me-2"
                                         onClick={() => handleEditEventType(eventType.eventTypeId)}
                                     >
-                                        Sửa
+                                        <i class="bi bi-pencil-square"></i>  Sửa
                                     </button>
                                     <button
                                         className="btn btn-danger btn-sm"
@@ -111,7 +116,7 @@ function EventTypes() {
                                             setShowDeleteModal(true);
                                         }}
                                     >
-                                        Xóa
+                                        <i class="bi bi-trash3"></i>  Xóa
                                     </button>
                                 </td>
                             </tr>
@@ -141,8 +146,8 @@ function EventTypes() {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => setShowCreateModal(false)}>Close</button>
-                            <button type="button" className="btn btn-primary" onClick={handleCreateEventType}>Create</button>
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => setShowCreateModal(false)}><i class="bi bi-x-lg"></i> Close</button>
+                            <button type="button" className="btn btn-primary" onClick={handleCreateEventType}><i class="bi bi-plus-square"></i> Create</button>
                         </div>
                     </div>
                 </div>
@@ -171,8 +176,8 @@ function EventTypes() {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => setShowEditModal(false)}>Close</button>
-                            <button type="button" className="btn btn-primary" onClick={handleUpdateEventType}>Update</button>
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => setShowEditModal(false)}><i class="bi bi-x-lg"></i>Close</button>
+                            <button type="button" className="btn btn-primary" onClick={handleUpdateEventType}><i class="bi bi-credit-card-fill"></i> Update</button>
                         </div>
                     </div>
                 </div>
@@ -190,8 +195,8 @@ function EventTypes() {
                             Are you sure you want to delete this event type?
                         </div>
                         <div className="modal-footer">
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => setShowDeleteModal(false)}>Close</button>
-                            <button type="button" className="btn btn-danger" onClick={handleDeleteEventType}>Delete</button>
+                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={() => setShowDeleteModal(false)}><i class="bi bi-x-lg"></i> Close</button>
+                            <button type="button" className="btn btn-danger" onClick={handleDeleteEventType}><i class="bi bi-trash3"></i> Delete</button>
                         </div>
                     </div>
                 </div>

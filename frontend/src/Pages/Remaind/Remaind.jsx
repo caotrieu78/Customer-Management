@@ -1,12 +1,113 @@
 import React, { useState, useEffect } from "react";
 import { getAllNotifications } from "../../services/eventNotificationServices";
 
+// Component Modal để hiển thị nội dung chi tiết
+const NotificationModal = ({ isOpen, onClose, content }) => {
+    if (!isOpen) return null;
+
+    const styles = {
+        modalBackdrop: {
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 999,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
+        },
+        modalContent: {
+            backgroundColor: "white",
+            padding: "20px",
+            borderRadius: "10px",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
+            maxWidth: "600px",
+            width: "90%",
+            maxHeight: "80%",
+            overflowY: "auto"
+        },
+        header: {
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: "10px"
+        },
+        closeButton: {
+            backgroundColor: "#dc3545",
+            color: "white",
+            border: "none",
+            padding: "5px 10px",
+            borderRadius: "5px",
+            cursor: "pointer"
+        },
+        contentBody: {
+            fontSize: "16px",
+            lineHeight: "1.6"
+        },
+        copyButton: {
+            marginTop: "10px",
+            backgroundColor: "#007bff",
+            color: "white",
+            border: "none",
+            padding: "10px 15px",
+            borderRadius: "5px",
+            cursor: "pointer"
+        }
+    };
+
+    // Hàm copy nội dung dạng text thuần (plain text)
+    const copyToClipboard = () => {
+        const tempElement = document.createElement("div");
+        tempElement.innerHTML = content;
+        const plainText = tempElement.textContent || tempElement.innerText || "";
+
+        navigator.clipboard.writeText(plainText).then(() => {
+            alert("Nội dung đã được copy vào clipboard!");
+        });
+    };
+
+    return (
+        <div style={styles.modalBackdrop} onClick={onClose}>
+            <div
+                style={styles.modalContent}
+                onClick={(e) => e.stopPropagation()} // Ngăn chặn sự kiện click bubble
+            >
+                <div style={styles.header}>
+                    <h4>Nội dung chi tiết</h4>
+                    <button style={styles.closeButton} onClick={onClose}>
+                        Đóng
+                    </button>
+                </div>
+                <div
+                    style={styles.contentBody}
+                    dangerouslySetInnerHTML={{ __html: content }}
+                />
+                <button style={styles.copyButton} onClick={copyToClipboard}>
+                    Copy nội dung
+                </button>
+            </div>
+        </div>
+    );
+};
+
+// Component chính: Remaind
 function Remaind() {
     const [notifications, setNotifications] = useState([]);
     const [groupedNotifications, setGroupedNotifications] = useState({});
     const [error, setError] = useState("");
     const [expandedSections, setExpandedSections] = useState({});
-    const [sortType, setSortType] = useState("all");
+    const [sortType, setSortType] = useState("all"); // Trạng thái lọc
+    const [selectedEmail, setSelectedEmail] = useState(""); // Nội dung email được chọn
+    const [showModal, setShowModal] = useState(false); // Trạng thái hiển thị modal
+    const [hoveredRow, setHoveredRow] = useState(null); // Trạng thái hover trên hàng
+
+    const decodeHtmlEntities = (str) => {
+        const textarea = document.createElement("textarea");
+        textarea.innerHTML = str;
+        return textarea.value;
+    };
 
     useEffect(() => {
         const fetchNotifications = async () => {
@@ -80,6 +181,17 @@ function Remaind() {
         }));
     };
 
+    const handleOpenEmail = (notification) => {
+        const decodedMessage = decodeHtmlEntities(notification.message);
+        setSelectedEmail(decodedMessage);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
+        setSelectedEmail("");
+    };
+
     const styles = {
         container: {
             maxWidth: "1200px",
@@ -97,9 +209,11 @@ function Remaind() {
             fontSize: "30px",
             fontWeight: "700"
         },
-        sortButtons: {
-            textAlign: "center",
-            marginBottom: "20px"
+        filterButtons: {
+            display: "flex",
+            justifyContent: "center",
+            marginBottom: "20px",
+            gap: "10px"
         },
         button: {
             backgroundColor: "#007bff",
@@ -108,7 +222,6 @@ function Remaind() {
             padding: "10px 15px",
             borderRadius: "5px",
             cursor: "pointer",
-            margin: "0 5px",
             fontSize: "16px",
             transition: "background-color 0.3s ease"
         },
@@ -118,48 +231,31 @@ function Remaind() {
         card: {
             marginBottom: "20px",
             borderRadius: "10px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.15)",
-            overflow: "hidden",
-            backgroundColor: "#f9f9f9"
+            overflow: "hidden"
         },
         cardHeader: {
             padding: "15px 20px",
-            backgroundColor: "#333",
+            backgroundColor: "#343a40",
             color: "white",
             cursor: "pointer",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            transition: "background-color 0.3s ease"
+            fontWeight: "bold"
         },
-        eventTitle: {
-            margin: 0,
-            fontSize: "18px",
-            fontWeight: "600"
+        link: {
+            color: "#007bff",
+            textDecoration: "none",
+            cursor: "pointer",
+            transition: "color 0.3s ease"
         },
-        toggleIcon: {
-            fontSize: "20px",
-            fontWeight: "bold",
-            transition: "transform 0.3s ease"
-        },
-        toggleIconOpen: {
-            transform: "rotate(90deg)"
-        },
-        cardBody: {
-            padding: "15px 20px",
-            backgroundColor: "#ffffff",
-            maxHeight: 0,
-            overflow: "hidden",
-            transition: "max-height 0.5s ease"
-        },
-        cardBodyExpanded: {
-            maxHeight: "500px"
+        linkHover: {
+            color: "#0056b3",
+            textDecoration: "underline"
         },
         table: {
             width: "100%",
-            borderCollapse: "separate",
-            borderSpacing: "0px 10px",
-            textAlign: "center",
+            borderCollapse: "collapse",
             marginTop: "10px"
         },
         tableHead: {
@@ -171,29 +267,29 @@ function Remaind() {
         },
         tableRow: {
             backgroundColor: "#f7f7f7",
-            transition: "background-color 0.3s ease",
-            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)"
+            transition: "background-color 0.3s ease"
         },
-        badgePending: {
-            backgroundColor: "#ffc107",
-            color: "black",
+        tableRowHover: {
+            backgroundColor: "#e9ecef" // Thêm màu highlight khi hover
+        },
+        badge: {
             padding: "5px 10px",
             borderRadius: "5px",
-            fontWeight: "bold"
-        },
-        badgeSuccess: {
-            backgroundColor: "#28a745",
-            color: "white",
-            padding: "5px 10px",
-            borderRadius: "5px",
-            fontWeight: "bold"
-        },
-        badgeError: {
-            backgroundColor: "#dc3545",
-            color: "white",
-            padding: "5px 10px",
-            borderRadius: "5px",
-            fontWeight: "bold"
+            fontWeight: "bold",
+            display: "inline-block",
+            minWidth: "70px",
+            textAlign: "center",
+            color: "white"
+        }
+    };
+
+    const getBadgeStyle = (status) => {
+        if (status === "Success") {
+            return { ...styles.badge, backgroundColor: "#28a745" }; // Xanh lá
+        } else if (status === "Pending") {
+            return { ...styles.badge, backgroundColor: "#ffc107", color: "black" }; // Vàng
+        } else {
+            return { ...styles.badge, backgroundColor: "#dc3545" }; // Đỏ
         }
     };
 
@@ -203,7 +299,8 @@ function Remaind() {
         <div style={styles.container}>
             <h2 style={styles.title}>Danh Sách Thông Báo Theo Sự Kiện</h2>
 
-            <div style={styles.sortButtons}>
+            {/* Nút lọc sự kiện */}
+            <div style={styles.filterButtons}>
                 <button
                     style={{
                         ...styles.button,
@@ -242,88 +339,108 @@ function Remaind() {
                 </button>
             </div>
 
+            {/* Danh sách sự kiện */}
             {Object.entries(groupedNotifications).map(
-                ([eventKey, notifications], index) => (
-                    <div key={index} style={styles.card}>
-                        <div
-                            style={{
-                                ...styles.cardHeader,
-                                ...(expandedSections[eventKey]
-                                    ? { backgroundColor: "#555" }
-                                    : {})
-                            }}
-                            onClick={() => toggleSection(eventKey)}
-                        >
-                            <h5 style={styles.eventTitle}>
-                                {eventKey} <span>({notifications.length} thông báo)</span>
-                            </h5>
-                            <span
+                ([eventKey, notifications], index) => {
+                    const totalNotifications = notifications.length;
+                    const sentNotifications = notifications.filter(
+                        (notification) => notification.sentAt
+                    ).length;
+
+                    return (
+                        <div key={index} style={styles.card}>
+                            <div
                                 style={{
-                                    ...styles.toggleIcon,
-                                    ...(expandedSections[eventKey] ? styles.toggleIconOpen : {})
+                                    ...styles.cardHeader,
+                                    ...(expandedSections[eventKey]
+                                        ? { backgroundColor: "#555" }
+                                        : {})
                                 }}
+                                onClick={() => toggleSection(eventKey)}
                             >
-                                ▶
-                            </span>
-                        </div>
-                        <div
-                            style={{
-                                ...styles.cardBody,
-                                ...(expandedSections[eventKey] ? styles.cardBodyExpanded : {})
-                            }}
-                        >
-                            <table style={styles.table}>
-                                <thead style={styles.tableHead}>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Người Phụ Trách</th>
-                                        <th>Khách Hàng</th>
-                                        <th>Trạng Thái</th>
-                                        <th>Hình Thức</th>
-                                        <th>Thời Gian Gửi</th>
-                                        <th>Nội Dung</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {notifications.map((notification, idx) => (
-                                        <tr key={idx} style={styles.tableRow}>
-                                            <td>{idx + 1}</td>
-                                            <td>
-                                                {notification.eventUser.user.fullName ||
-                                                    "Không xác định"}
-                                            </td>
-                                            <td>
-                                                {notification.eventUser.customer.name ||
-                                                    "Không xác định"}
-                                            </td>
-                                            <td>
-                                                <span
-                                                    style={
-                                                        notification.status === "Pending"
-                                                            ? styles.badgePending
-                                                            : notification.status === "Success"
-                                                                ? styles.badgeSuccess
-                                                                : styles.badgeError
-                                                    }
+                                <h5>
+                                    {eventKey} (Tổng: {totalNotifications}, Đã gửi:{" "}
+                                    {sentNotifications})
+                                </h5>
+                                <span>{expandedSections[eventKey] ? "-" : "+"}</span>
+                            </div>
+
+
+                            {expandedSections[eventKey] && (
+                                <div className="table-responsive">
+                                    <table style={styles.table}>
+                                        <thead style={styles.tableHead}>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Người Phụ Trách</th>
+                                                <th>Khách Hàng</th>
+                                                <th>Trạng Thái</th>
+                                                <th>Hình Thức</th>
+                                                <th>Thời Gian Gửi</th>
+                                                <th>Nội Dung</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {notifications.map((notification, idx) => (
+                                                <tr
+                                                    key={idx}
+                                                    style={{
+                                                        ...styles.tableRow,
+                                                        ...(hoveredRow === idx ? styles.tableRowHover : {})
+                                                    }}
+                                                    onMouseEnter={() => setHoveredRow(idx)}
+                                                    onMouseLeave={() => setHoveredRow(null)}
                                                 >
-                                                    {notification.status || "Không xác định"}
-                                                </span>
-                                            </td>
-                                            <td>{notification.method || "Không xác định"}</td>
-                                            <td>
-                                                {notification.sentAt
-                                                    ? new Date(notification.sentAt).toLocaleString()
-                                                    : "Chưa gửi"}
-                                            </td>
-                                            <td>{notification.message || "Không có nội dung"}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                                                    <td>{idx + 1}</td>
+                                                    <td>
+                                                        {notification.eventUser.user.fullName ||
+                                                            "Không xác định"}
+                                                    </td>
+                                                    <td>
+                                                        {notification.eventUser.customer.name ||
+                                                            "Không xác định"}
+                                                    </td>
+                                                    <td>
+                                                        <span style={getBadgeStyle(notification.status)}>
+                                                            {notification.status || "Không xác định"}
+                                                        </span>
+                                                    </td>
+                                                    <td>{notification.method || "Không xác định"}</td>
+                                                    <td>
+                                                        {notification.sentAt
+                                                            ? new Date(notification.sentAt).toLocaleString()
+                                                            : "Chưa gửi"}
+                                                    </td>
+                                                    <td>
+                                                        <span
+                                                            style={{
+                                                                ...styles.link,
+                                                                ...(hoveredRow === idx ? styles.linkHover : {})
+                                                            }}
+                                                            onClick={() => handleOpenEmail(notification)}
+                                                        >
+                                                            Xem nội dung
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+
+
                         </div>
-                    </div>
-                )
+                    );
+                }
             )}
+
+            {/* Modal hiển thị nội dung chi tiết */}
+            <NotificationModal
+                isOpen={showModal}
+                onClose={handleCloseModal}
+                content={selectedEmail}
+            />
         </div>
     );
 }

@@ -50,6 +50,7 @@ function Slidebar({ isCollapsed }) {
         };
         return pathsMap[name] || PATHS.HOME;
     };
+
     return (
         <nav className={`bg-dark text-white p-3 d-flex flex-column ${isCollapsed ? "collapsed-sidebar" : ""}`}>
             <h5 className={`text-white mb-4 ${isCollapsed ? "d-none" : ""}`}>Trang Admin</h5>

@@ -133,33 +133,41 @@ function User() {
             {/* Success Message */}
             {successMessage && <div className="alert alert-success">{successMessage}</div>}
             <h1 className="text-center">
-                <i className=""></i>QUẢN LÝ KHÁCH HÀNG
+                <i className=""></i>QUẢN LÝ NGƯỜI DÙNG
             </h1>
 
             {/* General Search and Filter */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                <input
-                    type="text"
-                    className="form-control w-50 me-3"
-                    placeholder="Tìm kiếm theo tên hoặc email..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <select
-                    className="form-select w-25"
-                    value={roleFilter}
-                    onChange={(e) => setRoleFilter(e.target.value)}
-                >
-                    <option value="">Tất cả vai trò</option>
-                    <option value="Manager">Manager</option>
-                    <option value="Staff">Staff</option>
-                </select>
-                <NavLink to={PATHS.ADD_USER} className="btn btn-primary me-2">
-                    <i class="bi bi-plus-square"></i> Thêm User
-                </NavLink>
+            <div className="row mb-4">
+                <div className="col-12 col-sm-4 mb-3 mb-sm-0">
+                    <input
+                        type="text"
+                        className="form-control w-100"
+                        placeholder="Tìm kiếm theo tên hoặc email..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+                <div className="col-12 col-sm-3 mb-3 mb-sm-0">
+                    <select
+                        className="form-select w-100"
+                        value={roleFilter}
+                        onChange={(e) => setRoleFilter(e.target.value)}
+                    >
+                        <option value="">Tất cả vai trò</option>
+                        <option value="Manager">Manager</option>
+                        <option value="Staff">Staff</option>
+                    </select>
+                </div>
+                <div className="col-12 col-sm-2 ms-auto text-sm-end">
+                    <NavLink to={PATHS.ADD_USER} className="btn btn-primary w-100 w-sm-auto">
+                        <i className="bi bi-plus-square"></i> Thêm User
+                    </NavLink>
+                </div>
             </div>
+
+
             {/* User Table */}
-            <div class="table-responsive">
+            <div className="table-responsive">
                 <table className="table table-striped table-bordered">
                     <thead className="table-dark">
                         <tr>

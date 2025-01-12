@@ -64,100 +64,133 @@ function EditCustomer() {
 
     return (
         <div className="container mt-4">
-            <h1>Edit Customer Information</h1>
-            {successMessage && <div className="alert alert-success">{successMessage}</div>}
-            {error && <div className="alert alert-danger">{error}</div>}
+            <div className="card shadow-lg p-4">
+                <h1 className="text-center  mb-4">
+                    Chỉnh Sửa Thông Tin Khách Hàng
+                </h1>
 
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label htmlFor="name" className="form-label">
-                        Customer Name
-                    </label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="name"
-                        name="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="email" className="form-label">
-                        Email
-                    </label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="phone" className="form-label">
-                        Phone
-                    </label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="phone"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="address" className="form-label">
-                        Address
-                    </label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="address"
-                        name="address"
-                        value={formData.address}
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="classificationId" className="form-label">
-                        Classification
-                    </label>
-                    <select
-                        className="form-select"
-                        id="classificationId"
-                        name="classificationId"
-                        value={formData.classificationId}
-                        onChange={handleChange}
-                        required
-                    >
-                        <option value="">Select Classification</option>
-                        <option value="1">VIP</option>
-                        <option value="2">Normal</option>
-                        <option value="3">Potential</option>
-                    </select>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="dateOfBirth" className="form-label">
-                        Date of Birth
-                    </label>
-                    <input
-                        type="date"
-                        className="form-control"
-                        id="dateOfBirth"
-                        name="dateOfBirth"
-                        value={formData.dateOfBirth}
-                        onChange={handleChange}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">
-                    Update Customer
-                </button>
-            </form>
+                {/* Success and Error Messages */}
+                {successMessage && (
+                    <div className="alert alert-success text-center">{successMessage}</div>
+                )}
+                {error && <div className="alert alert-danger text-center">{error}</div>}
+
+                <form onSubmit={handleSubmit}>
+                    <div className="row">
+                        {/* Customer Name */}
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="name" className="form-label fw-bold">
+                                Tên Khách Hàng
+                            </label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                id="name"
+                                name="name"
+                                value={formData.name}
+                                onChange={handleChange}
+                                placeholder="Nhập tên khách hàng"
+                                required
+                            />
+                        </div>
+
+                        {/* Email */}
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="email" className="form-label fw-bold">
+                                Email
+                            </label>
+                            <input
+                                type="email"
+                                className="form-control"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleChange}
+                                placeholder="Nhập email"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        {/* Phone */}
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="phone" className="form-label fw-bold">
+                                Số Điện Thoại
+                            </label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                id="phone"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleChange}
+                                placeholder="Nhập số điện thoại"
+                            />
+                        </div>
+
+                        {/* Address */}
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="address" className="form-label fw-bold">
+                                Địa Chỉ
+                            </label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                id="address"
+                                name="address"
+                                value={formData.address}
+                                onChange={handleChange}
+                                placeholder="Nhập địa chỉ"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        {/* Classification */}
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="classificationId" className="form-label fw-bold">
+                                Phân Loại
+                            </label>
+                            <select
+                                className="form-select"
+                                id="classificationId"
+                                name="classificationId"
+                                value={formData.classificationId}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Chọn phân loại</option>
+                                <option value="1">VIP</option>
+                                <option value="2">Normal</option>
+                                <option value="3">Potential</option>
+                            </select>
+                        </div>
+
+                        {/* Date of Birth */}
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="dateOfBirth" className="form-label fw-bold">
+                                Ngày Sinh
+                            </label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                id="dateOfBirth"
+                                name="dateOfBirth"
+                                value={formData.dateOfBirth}
+                                onChange={handleChange}
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <div className="text-center mt-4">
+                        <button type="submit" className="btn btn-primary btn-lg px-5">
+                            Cập Nhật Thông Tin
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }
