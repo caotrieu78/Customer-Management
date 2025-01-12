@@ -40,6 +40,7 @@ function Slidebar({ isCollapsed }) {
     const getPathFromName = (name) => {
         const pathsMap = {
             "Quản lý người dùng": PATHS.USER,
+            "Quản lý phòng ban": PATHS.DEPARTMENTS,
             "Quản lý khách hàng": PATHS.CUSTOMER,
             "Quản lý dự án": PATHS.PROJECT,
             "Quản lý sự kiện": PATHS.EVENT,
@@ -49,7 +50,6 @@ function Slidebar({ isCollapsed }) {
         };
         return pathsMap[name] || PATHS.HOME;
     };
-
     return (
         <nav className={`bg-dark text-white p-3 d-flex flex-column ${isCollapsed ? "collapsed-sidebar" : ""}`}>
             <h5 className={`text-white mb-4 ${isCollapsed ? "d-none" : ""}`}>Trang Admin</h5>

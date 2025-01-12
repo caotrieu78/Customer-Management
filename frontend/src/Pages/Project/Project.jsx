@@ -168,9 +168,6 @@ function Project() {
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
 
-                <button className="btn btn-outline-secondary" onClick={clearFilters}>
-                    Xóa bộ lọc
-                </button>
             </div>
 
             {/* Project Table */}

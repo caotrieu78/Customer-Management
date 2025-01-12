@@ -120,9 +120,6 @@ function User() {
                     <NavLink to={PATHS.ADD_USER} className="btn btn-primary me-2">
                         Thêm User
                     </NavLink>
-                    <NavLink to={PATHS.DEPARTMENTS} className="btn btn-secondary">
-                        Quản lý Phòng Ban
-                    </NavLink>
                 </div>
             </div>
 

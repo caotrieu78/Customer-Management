@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS permissions (
 INSERT INTO permissions (Name, Icon)
 VALUES
     ('Quản lý người dùng', 'bi-person'),
+    ('Quản lý phòng ban', 'bi bi-people-fill'),
     ('Quản lý khách hàng', 'bi bi-people'),
     ('Quản lý dự án', 'bi-bar-chart'),
     ('Quản lý sự kiện', 'bi-calendar-event'),
