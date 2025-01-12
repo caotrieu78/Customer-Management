@@ -29,7 +29,9 @@ public class EventNotificationService {
     @Autowired
     private EventRepository eventRepository;
 
-    // Lấy tất cả thông báo, tự động tạo thông báo cho các EventUserID chưa có
+    /**
+     * Lấy tất cả thông báo và tự động tạo thông báo cho các EventUserID chưa có.
+     */
     public List<EventNotification> getAllNotificationsWithEventUserIds() {
         List<Integer> allEventUserIds = eventUserRepository.findAllEventUserIds();
         List<Integer> existingNotificationEventUserIds = notificationRepository.findAllEventUserIdsWithNotifications();
@@ -50,8 +52,38 @@ public class EventNotificationService {
         return notificationRepository.findAll();
     }
 
-    // Gửi thông báo hỗ trợ nhiều tệp đính kèm
-    public EventNotification sendNotification(Integer notificationId, UpdateNotificationRequest request, List<String> attachmentPaths) throws MessagingException {
+    /**
+     * Lấy nội dung mẫu thông báo.
+     */
+    public String getNotificationTemplate(EventNotification notification) {
+        Customer customer = notification.getEventUser().getCustomer();
+        Event event = notification.getEventUser().getEvent();
+
+        return String.format("""
+            <h2>Kính gửi Ông/Bà %s,</h2>
+            <p>Chúng tôi xin thông báo về sự kiện sắp diễn ra:</p>
+            <ul>
+                <li><strong>Tên sự kiện:</strong> %s</li>
+                <li><strong>Mô tả:</strong> %s</li>
+                <li><strong>Ngày diễn ra:</strong> %s</li>
+                <li><strong>Địa điểm:</strong> PAX SKY, 123 Nguyễn Đình Chiểu, Phường 6, Quận 3, Hồ Chí Minh</li>
+            </ul>
+            <p>Thông báo từ hệ thống: <strong>Đây là thông báo mẫu từ hệ thống. Bạn có thể chỉnh sửa nội dung này trước khi gửi.</strong></p>
+        """,
+                customer.getName(),
+                event.getEventType().getEventTypeName(),
+                event.getDescription() != null ? event.getDescription() : "Không có mô tả",
+                event.getEventDate() != null ? event.getEventDate().toString() : "Không xác định");
+    }
+
+    /**
+     * Gửi thông báo qua email với nội dung từ frontend.
+     */
+    public EventNotification sendNotification(
+            Integer notificationId,
+            UpdateNotificationRequest request,
+            List<String> attachmentPaths) throws MessagingException {
+
         EventNotification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("Notification không tồn tại"));
 
@@ -61,112 +93,41 @@ public class EventNotificationService {
             throw new IllegalArgumentException("Khách hàng hoặc email không tồn tại.");
         }
 
-        // Lấy thông tin sự kiện
-        Event event = notification.getEventUser().getEvent();
-        String eventTypeName = event.getEventType().getEventTypeName();
-        String eventDescription = event.getDescription() != null ? event.getDescription() : "Không có mô tả";
-        String eventDate = event.getEventDate() != null ? event.getEventDate().toString() : "Không xác định";
-
-        // Lấy email khách hàng
-        String toEmail = customer.getEmail();
-
         // Cập nhật nội dung thông báo
         notification.setMessage(request.getMessage());
         notification.setSentAt(request.getSentAt());
         notification.setStatus(EventNotification.Status.Success);
 
-        // Tạo nội dung email
-        String subject = "Thông báo sự kiện: " + eventTypeName;
-        String body = String.format("""
-       <!DOCTYPE html>
-                           <html lang="vi">
-                           <head>
-                               <meta charset="UTF-8">
-                               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                               <title>Thông Báo Sự Kiện</title>
-                               <style>
-                                   body {
-                                       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                                       background-color: #f4f4f4;
-                                       margin: 0;
-                                       padding: 0;
-                                       color: #333;
-                                       white-space: normal; /* Đảm bảo văn bản không bị cắt */
-                                   }
-                                   .email-container {
-                                       background-color: #ffffff;
-                                       border-radius: 8px;
-                                       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-                                       margin-top: 20px;
-                                       max-width: 600px; /* Giới hạn chiều rộng container */
-                                       margin-left: auto;
-                                       margin-right: auto;
-                                   }
-                                   .header {
-                                       background-color: #007BFF;
-                                       color: white;
-                                       padding: 30px;
-                                       text-align: center;
-                                       border-top-left-radius: 8px;
-                                       border-top-right-radius: 8px;
-                                   }
-                                   .content {
-                                       padding: 20px;
-                                   }
-                                   .footer {
-                                       background-color: #f1f1f1;
-                                       text-align: center;
-                                       padding: 15px;
-                                       font-size: 14px;
-                                       color: #777;
-                                   }
-                               </style>
-                           </head>
-                           <body>
-                               <div class="container email-container">
-                                   <div class="header">
-                                       <h1>Thông Báo Sự Kiện</h1>
-                                   </div>
-                                   <div class="content">
-                                       <h2>Kính gửi Ông/Bà %s,</h2>
-                                       <p>Chúng tôi xin thông báo về sự kiện sắp diễn ra:</p>
-                                       <ul>
-                                           <li><strong>Tên sự kiện:</strong> %s</li>
-                                           <li><strong>Mô tả:</strong> %s</li>
-                                           <li><strong>Ngày diễn ra:</strong> %s</li>
-                                           <li><strong>Địa điểm:</strong> PAX SKY, 123 Nguyễn Đình Chiểu, Phường 6, Quận 3, Hồ Chí Minh</li>
-                                       </ul>
-                                       <p>Thông báo từ hệ thống: <strong>%s</strong></p>
-                                   </div>
-                                   <div class="footer">
-                                       <img src="https://saca.com.vn/vnt_upload/partner/47_ztt.png" alt="Logo Hòa Bình ">
-                                       <p>Cảm ơn bạn đã quan tâm! <br> Công ty Hòa Bình - Điện thoại: 123-456-7890</p>
-                                   </div>
-                               </div>
-                           </body>
-                           </html>
-    """, customer.getName(), eventTypeName, eventDescription, eventDate, request.getMessage());
+        // Tiêu đề email
+        String subject = "Thông báo sự kiện";
+        // Nội dung email là nội dung chỉnh sửa được gửi từ frontend
+        String body = request.getMessage();
 
         // Gửi email với các tệp đính kèm
-        emailService.sendEmail(toEmail, subject, body, attachmentPaths);
+        emailService.sendEmail(customer.getEmail(), subject, body, attachmentPaths);
 
-        // Tự động cập nhật ngày nhắc nhở nếu cần
+        // Cập nhật ngày nhắc nhở nếu chưa có
+        Event event = notification.getEventUser().getEvent();
         if (event.getReminderDate() == null) {
             event.setReminderDate(LocalDate.now().plusDays(7)); // Đặt nhắc nhở 7 ngày sau
             eventRepository.save(event); // Lưu sự kiện đã cập nhật
         }
 
-        // Lưu thông báo đã cập nhật
+        // Lưu thông báo
         return notificationRepository.save(notification);
     }
 
-    // Lấy thông báo theo ID
+    /**
+     * Lấy thông báo theo ID.
+     */
     public EventNotification getNotificationById(Integer notificationId) {
         return notificationRepository.findById(notificationId)
-                .orElseThrow(() -> new IllegalArgumentException("Notification not found with ID: " + notificationId));
+                .orElseThrow(() -> new IllegalArgumentException("Notification không tồn tại với ID: " + notificationId));
     }
 
-    // Xóa thông báo
+    /**
+     * Xóa thông báo.
+     */
     public void deleteNotification(Integer notificationId) {
         notificationRepository.deleteById(notificationId);
     }

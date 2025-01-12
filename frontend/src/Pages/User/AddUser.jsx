@@ -11,15 +11,15 @@ function AddUser() {
         email: "",
         role: "",
         password: "",
-        departmentId: "", // Lưu giá trị departmentId
-        avatar: "avatar_admin.png", // Giá trị mặc định cho avatar
+        departmentId: "",
+        avatar: "avatar_admin.png", // Default avatar
     });
-    const [departments, setDepartments] = useState([]); // Danh sách departments
+    const [departments, setDepartments] = useState([]);
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
     const navigate = useNavigate();
 
-    // Fetch danh sách departments khi component mount
+    // Fetch departments
     useEffect(() => {
         const fetchData = async () => {
             try {
@@ -32,13 +32,11 @@ function AddUser() {
         fetchData();
     }, []);
 
-    // Xử lý sự thay đổi trên form
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
 
-    // Submit form
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!formData.departmentId) {
@@ -46,7 +44,6 @@ function AddUser() {
             return;
         }
 
-        // Định dạng dữ liệu JSON gửi đi
         const userPayload = {
             username: formData.username,
             password: formData.password,
@@ -55,14 +52,12 @@ function AddUser() {
             role: formData.role,
             avatar: formData.avatar,
             department: {
-                departmentId: formData.departmentId, // Đặt departmentId bên trong object department
+                departmentId: formData.departmentId,
             },
         };
 
         try {
-            // Gọi API để thêm user
             await createUser(userPayload);
-
             setMessage("User added successfully!");
             setError("");
             setTimeout(() => {
@@ -76,98 +71,120 @@ function AddUser() {
     };
 
     return (
-        <div className="container mt-4">
-            <h1 className="mb-4">Add User</h1>
-            {message && <div className="alert alert-success">{message}</div>}
-            {error && <div className="alert alert-danger">{error}</div>}
-            <form onSubmit={handleSubmit}>
-                <div className="mb-3">
-                    <label htmlFor="username" className="form-label">Username</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="username"
-                        name="username"
-                        value={formData.username}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="fullName" className="form-label">Full Name</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="fullName"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        id="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="role" className="form-label">Role</label>
-                    <select
-                        className="form-select"
-                        id="role"
-                        name="role"
-                        value={formData.role}
-                        onChange={handleInputChange}
-                        required
-                    >
-                        <option value="">Select Role</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Manager">Manager</option>
-                        <option value="Staff">Staff</option>
-                    </select>
-                </div>
+        <div className="container">
+            <div className="card shadow-sm p-4">
+                <h1 className="text-center">
+                    Thêm Người Dùng
+                </h1>
+                {message && <div className="alert alert-success text-center">{message}</div>}
+                {error && <div className="alert alert-danger text-center">{error}</div>}
 
-                {/* Dropdown chọn phòng ban */}
-                <div className="mb-3">
-                    <label htmlFor="departmentId" className="form-label">Department</label>
-                    <select
-                        className="form-select"
-                        id="departmentId"
-                        name="departmentId"
-                        value={formData.departmentId}
-                        onChange={handleInputChange}
-                        required
-                    >
-                        <option value="">Select Department</option>
-                        {departments.map((department) => (
-                            <option key={department.departmentId} value={department.departmentId}>
-                                {department.departmentName}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="row">
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="username" className="form-label fw-bold">Tên Đăng Nhập</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                id="username"
+                                name="username"
+                                value={formData.username}
+                                onChange={handleInputChange}
+                                placeholder="Nhập tên đăng nhập"
+                                required
+                            />
+                        </div>
 
-                <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        id="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleInputChange}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">Add User</button>
-            </form>
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="fullName" className="form-label fw-bold">Họ và Tên</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                id="fullName"
+                                name="fullName"
+                                value={formData.fullName}
+                                onChange={handleInputChange}
+                                placeholder="Nhập họ và tên"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="email" className="form-label fw-bold">Email</label>
+                            <input
+                                type="email"
+                                className="form-control"
+                                id="email"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                placeholder="Nhập email"
+                                required
+                            />
+                        </div>
+
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="password" className="form-label fw-bold">Mật Khẩu</label>
+                            <input
+                                type="password"
+                                className="form-control"
+                                id="password"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                placeholder="Nhập mật khẩu"
+                                required
+                            />
+                        </div>
+                    </div>
+
+                    <div className="row">
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="role" className="form-label fw-bold">Vai Trò</label>
+                            <select
+                                className="form-select"
+                                id="role"
+                                name="role"
+                                value={formData.role}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="">Chọn Vai Trò</option>
+                                <option value="Admin">Admin</option>
+                                <option value="Manager">Manager</option>
+                                <option value="Staff">Staff</option>
+                            </select>
+                        </div>
+
+                        <div className="col-md-6 mb-3">
+                            <label htmlFor="departmentId" className="form-label fw-bold">Phòng Ban</label>
+                            <select
+                                className="form-select"
+                                id="departmentId"
+                                name="departmentId"
+                                value={formData.departmentId}
+                                onChange={handleInputChange}
+                                required
+                            >
+                                <option value="">Chọn Phòng Ban</option>
+                                {departments.map((department) => (
+                                    <option key={department.departmentId} value={department.departmentId}>
+                                        {department.departmentName}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div className="text-center mt-4">
+                        <button type="submit" className="btn btn-primary btn-lg px-5">
+                            Thêm Người Dùng
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 }

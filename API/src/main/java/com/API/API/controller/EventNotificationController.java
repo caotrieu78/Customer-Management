@@ -26,21 +26,41 @@ public class EventNotificationController {
     @Autowired
     private FileUploadService fileUploadService;
 
-    // Lấy tất cả thông báo (bao gồm tự động tạo thông báo nếu chưa tồn tại)
+    /**
+     * Lấy tất cả thông báo (bao gồm tự động tạo thông báo nếu chưa tồn tại).
+     */
     @GetMapping
     public ResponseEntity<List<EventNotification>> getAllNotifications() {
         List<EventNotification> notifications = notificationService.getAllNotificationsWithEventUserIds();
         return ResponseEntity.ok(notifications);
     }
 
-    // Lấy thông báo chi tiết theo ID
+    /**
+     * Lấy chi tiết một thông báo theo ID.
+     */
     @GetMapping("/{notificationId}")
     public ResponseEntity<EventNotification> getNotificationById(@PathVariable Integer notificationId) {
         EventNotification notification = notificationService.getNotificationById(notificationId);
         return ResponseEntity.ok(notification);
     }
 
-    // API để gửi thông báo (cho phép gửi nhiều loại tệp đính kèm)
+    /**
+     * Lấy nội dung mẫu cho một thông báo.
+     */
+    @GetMapping("/{notificationId}/content")
+    public ResponseEntity<String> getNotificationContent(@PathVariable Integer notificationId) {
+        try {
+            EventNotification notification = notificationService.getNotificationById(notificationId);
+            String template = notificationService.getNotificationTemplate(notification);
+            return ResponseEntity.ok(template);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("Đã xảy ra lỗi khi lấy nội dung mẫu: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Gửi thông báo (cho phép đính kèm file).
+     */
     @PutMapping("/{notificationId}/send")
     public ResponseEntity<?> sendNotification(
             @PathVariable Integer notificationId,
@@ -48,30 +68,29 @@ public class EventNotificationController {
             @RequestParam String sentAt,
             @RequestParam(value = "attachments", required = false) List<MultipartFile> attachments) {
         try {
-            // Parse sentAt to LocalDateTime
+            // Parse thời gian gửi từ chuỗi sang LocalDateTime
             DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE_TIME;
             LocalDateTime parsedSentAt = LocalDateTime.parse(sentAt, formatter);
 
-            // Create a list to store the paths of uploaded files
+            // Xử lý tệp đính kèm
             List<String> attachmentPaths = new ArrayList<>();
             if (attachments != null && !attachments.isEmpty()) {
-                // Handle each attachment and upload it
                 for (MultipartFile attachment : attachments) {
-                    String filePath = fileUploadService.uploadFile(attachment); // Upload the file and get its path
+                    String filePath = fileUploadService.uploadFile(attachment);
                     attachmentPaths.add(filePath);
                 }
             }
 
-            // Prepare the notification request
+            // Chuẩn bị yêu cầu gửi thông báo
             UpdateNotificationRequest request = new UpdateNotificationRequest();
             request.setMessage(message);
             request.setSentAt(parsedSentAt);
-            request.setAttachmentPaths(attachmentPaths); // Set attachment paths in the request
+            request.setAttachmentPaths(attachmentPaths);
 
-            // Send the notification with the attachments
+            // Gửi thông báo
             EventNotification updatedNotification = notificationService.sendNotification(notificationId, request, attachmentPaths);
 
-            // Return a success response with the updated notification
+            // Phản hồi thành công
             return ResponseEntity.ok(new ResponseMessage("Thông báo đã gửi thành công", updatedNotification));
 
         } catch (IllegalArgumentException e) {
@@ -83,10 +102,12 @@ public class EventNotificationController {
         }
     }
 
-    // Xóa thông báo
+    /**
+     * Xóa một thông báo.
+     */
     @DeleteMapping("/{notificationId}")
     public ResponseEntity<String> deleteNotification(@PathVariable Integer notificationId) {
         notificationService.deleteNotification(notificationId);
-        return ResponseEntity.ok("Notification deleted successfully.");
+        return ResponseEntity.ok("Thông báo đã được xóa thành công.");
     }
 }

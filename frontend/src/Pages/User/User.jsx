@@ -8,13 +8,25 @@ function User() {
     const [filteredUsers, setFilteredUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [roleFilter, setRoleFilter] = useState("");
+    const [columnSearch, setColumnSearch] = useState({
+        username: "",
+        fullName: "",
+        email: "",
+        department: "",
+    }); // Lưu trạng thái tìm kiếm theo cột
+    const [visibleSearch, setVisibleSearch] = useState({
+        username: false,
+        fullName: false,
+        email: false,
+        department: false,
+    }); // Lưu trạng thái hiển thị của ô tìm kiếm theo cột
     const [error, setError] = useState("");
     const [successMessage, setSuccessMessage] = useState("");
     const [userToDelete, setUserToDelete] = useState(null);
 
     // Pagination states
     const [currentPage, setCurrentPage] = useState(1);
-    const usersPerPage = 10; // Number of users per page
+    const usersPerPage = 10;
 
     // Fetch all users
     useEffect(() => {
@@ -32,7 +44,7 @@ function User() {
         fetchUsers();
     }, []);
 
-    // Apply search and role filter
+    // Apply search and filters
     useEffect(() => {
         let tempUsers = [...users];
 
@@ -44,7 +56,7 @@ function User() {
             tempUsers = tempUsers.filter((user) => user.role === roleFilter);
         }
 
-        // Filter by search term
+        // Filter by general search term
         if (searchTerm) {
             tempUsers = tempUsers.filter(
                 (user) =>
@@ -53,9 +65,20 @@ function User() {
             );
         }
 
+        // Filter by column search
+        tempUsers = tempUsers.filter(
+            (user) =>
+                user.username.toLowerCase().includes(columnSearch.username.toLowerCase()) &&
+                user.fullName.toLowerCase().includes(columnSearch.fullName.toLowerCase()) &&
+                user.email.toLowerCase().includes(columnSearch.email.toLowerCase()) &&
+                (user.department?.departmentName || "")
+                    .toLowerCase()
+                    .includes(columnSearch.department.toLowerCase())
+        );
+
         setFilteredUsers(tempUsers);
         setCurrentPage(1); // Reset to the first page after filtering
-    }, [searchTerm, roleFilter, users]);
+    }, [searchTerm, roleFilter, columnSearch, users]);
 
     // Handle delete user
     const confirmDelete = (userId) => {
@@ -90,6 +113,13 @@ function User() {
         if (currentPage > 1) setCurrentPage((prev) => prev - 1);
     };
 
+    const toggleSearch = (column) => {
+        setVisibleSearch((prev) => ({
+            ...prev,
+            [column]: !prev[column], // Chuyển đổi trạng thái hiện/ẩn của ô tìm kiếm
+        }));
+    };
+
     if (error) {
         return <div className="alert alert-danger">{error}</div>;
     }
@@ -102,30 +132,12 @@ function User() {
         <div className="container">
             {/* Success Message */}
             {successMessage && <div className="alert alert-success">{successMessage}</div>}
+            <h1 className="text-center">
+                <i className=""></i>QUẢN LÝ KHÁCH HÀNG
+            </h1>
 
-            {/* Add User Button */}
+            {/* General Search and Filter */}
             <div className="d-flex justify-content-between align-items-center mb-4">
-                <h1
-                    className="text-center"
-                    style={{
-                        color: "#0056b3",
-                        fontWeight: "bold",
-                        textTransform: "uppercase",
-                    }}
-                >
-                    <i className="bi bi-people-fill me-2"></i>Danh sách User
-                </h1>
-
-                <div>
-                    <NavLink to={PATHS.ADD_USER} className="btn btn-primary me-2">
-                        Thêm User
-                    </NavLink>
-                </div>
-            </div>
-
-            {/* Search and Filter */}
-            <div className="d-flex justify-content-between align-items-center mb-4">
-                {/* Search */}
                 <input
                     type="text"
                     className="form-control w-50 me-3"
@@ -133,7 +145,6 @@ function User() {
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                {/* Filter */}
                 <select
                     className="form-select w-25"
                     value={roleFilter}
@@ -143,19 +154,104 @@ function User() {
                     <option value="Manager">Manager</option>
                     <option value="Staff">Staff</option>
                 </select>
+                <NavLink to={PATHS.ADD_USER} className="btn btn-primary me-2">
+                    <i class="bi bi-plus-square"></i> Thêm User
+                </NavLink>
             </div>
-
             {/* User Table */}
-            <div className="table-responsive">
+            <div class="table-responsive">
                 <table className="table table-striped table-bordered">
                     <thead className="table-dark">
                         <tr>
                             <th>ID</th>
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Email</th>
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Username
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("username")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.username && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm Username"
+                                        value={columnSearch.username}
+                                        onChange={(e) =>
+                                            setColumnSearch({ ...columnSearch, username: e.target.value })
+                                        }
+                                    />
+                                )}
+                            </th>
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Full Name
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("fullName")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.fullName && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm Full Name"
+                                        value={columnSearch.fullName}
+                                        onChange={(e) =>
+                                            setColumnSearch({ ...columnSearch, fullName: e.target.value })
+                                        }
+                                    />
+                                )}
+                            </th>
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Email
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("email")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.email && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm Email"
+                                        value={columnSearch.email}
+                                        onChange={(e) =>
+                                            setColumnSearch({ ...columnSearch, email: e.target.value })
+                                        }
+                                    />
+                                )}
+                            </th>
                             <th>Role</th>
-                            <th>Department</th> {/* New column for department */}
+                            <th>
+                                <div className="d-flex justify-content-between align-items-center">
+                                    Department
+                                    <i
+                                        className="bi bi-search"
+                                        style={{ cursor: "pointer" }}
+                                        onClick={() => toggleSearch("department")}
+                                    ></i>
+                                </div>
+                                {visibleSearch.department && (
+                                    <input
+                                        type="text"
+                                        className="form-control mt-1"
+                                        placeholder="Tìm kiếm Department"
+                                        value={columnSearch.department}
+                                        onChange={(e) =>
+                                            setColumnSearch({
+                                                ...columnSearch,
+                                                department: e.target.value,
+                                            })
+                                        }
+                                    />
+                                )}
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -167,19 +263,19 @@ function User() {
                                 <td>{user.fullName}</td>
                                 <td>{user.email}</td>
                                 <td>{user.role}</td>
-                                <td>{user.department ? user.department.departmentName : 'N/A'}</td> {/* Display department name */}
+                                <td>{user.department ? user.department.departmentName : "N/A"}</td>
                                 <td>
                                     <NavLink
                                         to={`${PATHS.EDIT_USER}/${user.userId}`}
                                         className="btn btn-warning btn-sm me-2"
                                     >
-                                        Sửa
+                                        <i class="bi bi-pencil-square"></i> Sửa
                                     </NavLink>
                                     <button
                                         className="btn btn-danger btn-sm"
                                         onClick={() => confirmDelete(user.userId)}
                                     >
-                                        Xóa
+                                        <i class="bi bi-trash"></i> Xóa
                                     </button>
                                 </td>
                             </tr>
@@ -197,7 +293,9 @@ function User() {
                 >
                     Previous
                 </button>
-                <span>Page {currentPage} of {totalPages}</span>
+                <span>
+                    Page {currentPage} of {totalPages}
+                </span>
                 <button
                     className="btn btn-secondary btn-sm"
                     onClick={handleNextPage}

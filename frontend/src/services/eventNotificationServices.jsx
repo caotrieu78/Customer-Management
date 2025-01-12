@@ -18,43 +18,55 @@ const handleRequest = async (request) => {
 // API cho Notifications (Thông báo)
 // ============================
 
-// Lấy danh sách tất cả các thông báo
+// 1. Lấy danh sách tất cả các thông báo
 export const getAllNotifications = async () => {
     return handleRequest(() => axios.get(`${API_BASE_URL}/notifications`));
 };
 
-// Lấy chi tiết một thông báo theo ID
+// 2. Lấy chi tiết một thông báo theo ID
 export const getNotificationById = async (notificationId) => {
-    return handleRequest(() => axios.get(`${API_BASE_URL}/notifications/${notificationId}`));
+    return handleRequest(() =>
+        axios.get(`${API_BASE_URL}/notifications/${notificationId}`)
+    );
 };
 
-// Tạo mới một thông báo
+// 3. Lấy nội dung mẫu (template) cho thông báo
+export const getNotificationContent = async (notificationId) => {
+    return handleRequest(() =>
+        axios.get(`${API_BASE_URL}/notifications/${notificationId}/content`)
+    );
+};
+
+// 4. Tạo mới một thông báo
 export const createNotification = async (notification) => {
-    return handleRequest(() => axios.post(`${API_BASE_URL}/notifications`, notification));
+    return handleRequest(() =>
+        axios.post(`${API_BASE_URL}/notifications`, notification)
+    );
 };
 
-// Cập nhật trạng thái thông báo
+// 5. Cập nhật trạng thái thông báo
 export const updateNotificationStatus = async (notificationId, status) => {
     return handleRequest(() =>
         axios.put(`${API_BASE_URL}/notifications/${notificationId}/status`, null, {
-            params: { status },
+            params: { status }
         })
     );
 };
 
-// Xóa một thông báo
+// 6. Xóa một thông báo
 export const deleteNotification = async (notificationId) => {
-    return handleRequest(() => axios.delete(`${API_BASE_URL}/notifications/${notificationId}`));
+    return handleRequest(() =>
+        axios.delete(`${API_BASE_URL}/notifications/${notificationId}`)
+    );
 };
 
-
-// Gửi thông báo
+// 7. Gửi thông báo (hỗ trợ gửi nội dung và tệp đính kèm)
 export const sendNotification = async (notificationId, data) => {
     return handleRequest(() =>
         axios.put(`${API_BASE_URL}/notifications/${notificationId}/send`, data, {
             headers: {
-                "Content-Type": "multipart/form-data",  // Đảm bảo rằng content-type là multipart/form-data
-            },
+                "Content-Type": "multipart/form-data" // Đảm bảo rằng content-type là multipart/form-data
+            }
         })
     );
 };
