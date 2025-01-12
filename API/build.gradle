@@ -9,9 +9,17 @@ version = '0.0.1-SNAPSHOT'
 
 java {
 	toolchain {
-		languageVersion = JavaLanguageVersion.of(22)
+		if (System.getenv("JAVA_HOME") != null) {
+			def javaHomePath = System.getenv("JAVA_HOME")
+			// Tự động lấy version từ JAVA_HOME
+			languageVersion = JavaLanguageVersion.of(Integer.parseInt(javaHomePath.tokenize('jdk-')[1]))
+		} else {
+			// Nếu JAVA_HOME không được cấu hình, mặc định là Java 22
+			languageVersion = JavaLanguageVersion.of(22)
+		}
 	}
 }
+
 
 configurations {
 	compileOnly {

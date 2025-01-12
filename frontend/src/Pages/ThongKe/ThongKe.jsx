@@ -249,7 +249,6 @@ const ThongKe = () => {
                         <Bar data={chartDataSummary} options={chartOptionsSummary} />
                     </div>
                 )}
-
                 {/* Customer Report */}
                 {activeTab === "customers" && (
                     <div className="tab-pane fade show active">
